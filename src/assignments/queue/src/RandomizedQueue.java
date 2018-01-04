@@ -107,6 +107,17 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
         synchronized (mMutex) {
             mItems[mTail++] = item;
+            if (mTail >= mItems.length) {
+                // In ArrayDeque implementation, it is written in one line as:
+                //
+                //   head = (head - 1) & (elements.length - 1)
+                //
+                // It works because the elements.length is the powers of TWO!
+                // elements.length - 1 is sort of a complement operation.
+                // This value could be used to get the positive remainder of the
+                // HEAD.
+                mTail %= mItems.length;
+            }
 
             // Ensure the pool is large enough.
             if (mHead == mTail) {
@@ -129,7 +140,10 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
             }
 
             // Recycle the memory.
-            shrinkCapacity();
+            final int size = getSize();
+            if (size < mItems.length / 4) {
+                shrinkCapacity(size);
+            }
 
             return item;
         }
@@ -145,10 +159,13 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
             final Item item = (Item) mItems[--mTail];
 
             // Unset the reference.
-            mItems[mTail + 1] = null;
+            mItems[mTail] = null;
 
             // Recycle the memory.
-            shrinkCapacity();
+            final int size = getSize();
+            if (size < mItems.length / 4) {
+                shrinkCapacity(size);
+            }
 
             return item;
         }
@@ -180,34 +197,65 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
     private void doubleCapacity() {
         // Make it twice larger.
-        int n = getSize();
-        final int newCapacity = n << 1;
+        final int size = mItems.length;
+        final int newCapacity = mItems.length << 1;
         // Check overflow.
         if (newCapacity < 0) {
             throw new IllegalStateException("Sorry, the deque is too large.");
         }
 
-        final Object[] a = new Object[n];
+        final Object[] a = new Object[newCapacity];
 
         // For example:
         // a=[_,_,_,_, , ,_,_]
         //            t   h
+        //
+        // or
+        //
+        // a=[ , ,_,_,_,_,_,_]
+        //    t   h
+        //
+        // ...
+        //
+        // to:
+        // a=[_,_,_,_,_,_, , ]
+        //    h           t
 
-        if (mHead > mTail) {
-            int rightN = mItems.length - mHead;
-            System.arraycopy(mItems, mHead, a, 0, rightN);
-            System.arraycopy(mItems, 0, a, rightN, mTail);
-        } else {
-            System.arraycopy(mItems, 0, a, 0, n);
+        int rightN = mItems.length - mHead;
+        System.arraycopy(mItems, mHead, a, 0, rightN);
+        System.arraycopy(mItems, 0, a, rightN, mHead);
+
+        mItems = a;
+        mHead = 0;
+        mTail = size;
+    }
+
+    private void shrinkCapacity(final int size) {
+        // For example:
+        // a=[_,_, , , , , , , , , , , , , ,_]
+        //        t                         h
+        //
+        // or
+        //
+        // a=[ , ,_,_,_, , , , , , , , , , , ]
+        //        h     t
+        //
+        // To:
+        // a=[_,_,_, , , , , ]
+        //    h     t
+
+        final int capacity = mItems.length;
+        final int newCapacity = capacity >> 1;
+        final Object[] a = new Object[newCapacity];
+
+        for (int i = mHead, j = 0; i < mHead + size; ++i, ++j) {
+            int k = i >= mItems.length ? i % mItems.length : i;
+            a[j] = mItems[k];
         }
 
         mItems = a;
         mHead = 0;
-        mTail = n;
-    }
-
-    private void shrinkCapacity() {
-        // TODO:
+        mTail = size;
     }
 
     private int getSize() {
@@ -248,7 +296,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
         @Override
         public Item next() {
-            if (!checkIfOperationValid()) {
+            if (checkIfOperationInvalid()) {
                 throw new NoSuchElementException();
             }
 
@@ -265,7 +313,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
         @Override
         public void remove() {
-            if (!checkIfOperationValid()) {
+            if (checkIfOperationInvalid()) {
                 throw new UnsupportedOperationException();
             }
 
@@ -301,17 +349,17 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
             }
         }
 
-        private boolean checkIfOperationValid() {
-            if (isEmpty()) return false;
+        private boolean checkIfOperationInvalid() {
+            if (isEmpty()) return true;
 
             // For example:
             // a=[_,_,_,_, , ,_,_]
             //            t   h
 
             if (mHead < mTail) {
-                return mCurrent >= mHead && mCurrent < mTail;
+                return mCurrent < mHead || mCurrent >= mTail;
             } else {
-                return mCurrent < mTail || mCurrent >= mHead;
+                return mCurrent >= mTail && mCurrent < mHead;
             }
         }
     }

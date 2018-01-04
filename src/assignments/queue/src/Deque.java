@@ -296,7 +296,7 @@ public class Deque<Item> implements Iterable<Item> {
 
         @Override
         public Item next() {
-            if (!checkIfOperationValid()) {
+            if (checkIfOperationInvalid()) {
                 throw new NoSuchElementException();
             }
 
@@ -313,7 +313,7 @@ public class Deque<Item> implements Iterable<Item> {
 
         @Override
         public void remove() {
-            if (!checkIfOperationValid()) {
+            if (checkIfOperationInvalid()) {
                 throw new UnsupportedOperationException();
             }
 
@@ -349,17 +349,17 @@ public class Deque<Item> implements Iterable<Item> {
             }
         }
 
-        private boolean checkIfOperationValid() {
-            if (isEmpty()) return false;
+        private boolean checkIfOperationInvalid() {
+            if (isEmpty()) return true;
 
             // For example:
             // a=[_,_,_,_, , ,_,_]
             //            t   h
 
             if (mHead < mTail) {
-                return mCurrent >= mHead && mCurrent < mTail;
+                return mCurrent < mHead || mCurrent >= mTail;
             } else {
-                return mCurrent < mTail || mCurrent >= mHead;
+                return mCurrent >= mTail && mCurrent < mHead;
             }
         }
     }
