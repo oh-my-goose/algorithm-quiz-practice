@@ -1,4 +1,4 @@
-import javax.lang.model.element.VariableElement;
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -50,16 +50,17 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     private final Object mMutex = new Object();
 
     // Resizing array.
-    private Object[] mItems;
-    private int mHead;
-    private int mTail;
+    private volatile Object[] mItems;
+    private volatile int mHead;
+    private volatile int mTail;
 
     // For sampling.
-    private RandomOrderIterator mIterator = new RandomOrderIterator();
+    private Iterator<Item> mIterator;
 
     public RandomizedQueue() {
         mItems = new Object[DEFAULT_CAPACITY];
         mHead = mTail = 0;
+        mIterator = iterator();
     }
 
     public boolean isEmpty() {
@@ -98,6 +99,9 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
             if (mHead == mTail) {
                 doubleCapacity();
             }
+
+            // Reset the sampling iterator.
+            mIterator = iterator();
         }
     }
 
@@ -108,7 +112,6 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         }
 
         synchronized (mMutex) {
-
             // Example:
             // a=[ , , ,_,_,_,_,_]
             //    t     h
@@ -146,6 +149,11 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
                 shrinkCapacity(size);
             }
 
+            // TODO: Probably update the iterator's cached tail so that the
+            // TODO: uniform random distribution is guaranteed.
+            // Reset the sample iterator.
+            mIterator = iterator();
+
             return chosen;
         }
     }
@@ -160,14 +168,14 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
             if (mIterator.hasNext()) {
                 return mIterator.next();
             } else {
-                mIterator = new RandomOrderIterator();
+                mIterator = iterator();
                 return mIterator.next();
             }
         }
     }
 
     public Iterator<Item> iterator() {
-        return new RandomOrderIterator();
+        return new RandomizedIterator(getSize());
     }
 
     @Override
@@ -264,49 +272,59 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         }
     }
 
-    public Iterator<Item> getQueueIterator() {
-        return new QuequeIterator();
+    private Iterator<Item> getQueueIterator() {
+        return new QueueIterator(mHead);
     }
 
     ///////////////////////////////////////////////////////////////////////////
     // Clazz //////////////////////////////////////////////////////////////////
 
-    private class RandomOrderIterator implements Iterator<Item> {
+    /**
+     * For iterating the elements in a random order.
+     */
+    private class RandomizedIterator implements Iterator<Item> {
 
-        int mCurrent;
+        // For detecting concurrent modification, where if the cached tail is
+        // not equal to the tail, there must be a ConcurrentModificationException.
+        private final int mCachedTail;
+        // For random access.
+        private volatile int mCachedSize;
 
-        private RandomOrderIterator() {
-            // EMPTY.
+        private RandomizedIterator(int size) {
+            mCachedSize = size;
+            mCachedTail = mTail;
         }
 
         @Override
         public boolean hasNext() {
-            if (isEmpty()) return false;
-
-            synchronized (mMutex) {
-                int dist = mCurrent - mHead;
-                if (dist < 0) {
-                    dist += mItems.length;
-                }
-
-                return dist < getSize();
+            if (checkIfConcurrentModification()) {
+                throw new ConcurrentModificationException();
             }
+
+            return mCachedSize > 0;
         }
 
         @Override
         public Item next() {
             if (checkIfOperationInvalid()) {
                 throw new NoSuchElementException();
+            } else if (checkIfConcurrentModification()) {
+                throw new ConcurrentModificationException();
             }
 
             synchronized (mMutex) {
-                final Item item = (Item) mItems[mCurrent];
+                int cursor = mHead + (int) Math.floor(mCachedSize * Math.random());
+                if (cursor >= mItems.length) cursor %= mItems.length;
+                final Item chosen = (Item) mItems[cursor];
 
-                if (++mCurrent >= mItems.length) {
-                    mCurrent %= mItems.length;
-                }
+                int cursorLast = mHead + (--mCachedSize);
+                if (cursorLast >= mItems.length) cursorLast %= mItems.length;
+                final Item last = (Item) mItems[cursorLast];
 
-                return item;
+                mItems[cursor] = last;
+                mItems[cursorLast] = chosen;
+
+                return chosen;
             }
         }
 
@@ -314,61 +332,75 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         public void remove() {
             if (checkIfOperationInvalid()) {
                 throw new UnsupportedOperationException();
+            } else if (checkIfConcurrentModification()) {
+                throw new ConcurrentModificationException();
             }
 
             synchronized (mMutex) {
                 // Adjust array.
-                if (mHead > mTail) {
-                    int n = size();
-                    final Object[] a = new Object[mItems.length];
-
-                    // For example:
-                    // a=[_,_,_,_, , ,_,_]
-                    //            t   h
-
-                    int rightN = mItems.length - mHead;
-                    System.arraycopy(mItems, mHead, a, 0, rightN);
-                    System.arraycopy(mItems, 0, a, rightN, mTail);
-
-                    mItems = a;
-
-                    int offset = mCurrent - mHead;
-                    if (offset < 0) offset += mItems.length;
-                    mCurrent = offset;
-
-                    mHead = 0;
-                    mTail = n;
-                }
+                adjustElements();
 
                 // Left-shift everything that is to the right of current.
+                final int cursor = mHead + mCachedSize;
+                final int rightToCursor = cursor + 1;
                 System.arraycopy(
-                        mItems, mCurrent + 1,
-                        mItems, mCurrent, mTail - mCurrent - 1);
+                        mItems, rightToCursor,
+                        mItems, cursor, mItems.length - rightToCursor);
                 mItems[mTail--] = null;
+                mCachedSize = mTail;
+            }
+        }
+
+        private void adjustElements() {
+            if (mHead > mTail) {
+                int n = getSize();
+                final Object[] a = new Object[mItems.length];
+
+                // For example:
+                // a=[_,_,_,_, , ,_,_]
+                //            t   h
+
+                int rightN = mItems.length - mHead;
+                System.arraycopy(mItems, mHead, a, 0, rightN);
+                System.arraycopy(mItems, 0, a, rightN, mTail);
+
+                mItems = a;
+
+                mHead = 0;
+                mTail = n;
             }
         }
 
         private boolean checkIfOperationInvalid() {
             if (isEmpty()) return true;
 
-            // For example:
-            // a=[_,_,_,_, , ,_,_]
-            //            t   h
+            // Valid example:
+            // a=[ , ,_,_]
+            //    t   h
+            //
+            // Invalid example:
+            // a=[ , ,_,_]
+            //        h
+            //        t
 
-            if (mHead < mTail) {
-                return mCurrent < mHead || mCurrent >= mTail;
-            } else {
-                return mCurrent >= mTail && mCurrent < mHead;
-            }
+            return mCachedSize <= 0;
+        }
+
+        private boolean checkIfConcurrentModification() {
+            return mCachedTail != mTail;
         }
     }
 
-    private class QuequeIterator implements Iterator<Item> {
+    /**
+     * Iterator for iterating the element in LIFO order.
+     * Note: This iterator cannot detect {@link ConcurrentModificationException}.
+     */
+    private class QueueIterator implements Iterator<Item> {
 
         int mCurrent;
 
-        public QuequeIterator() {
-            mCurrent = mHead;
+        public QueueIterator(int head) {
+            mCurrent = head;
         }
 
         @Override
@@ -411,7 +443,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
             synchronized (mMutex) {
                 // Adjust array.
                 if (mHead > mTail) {
-                    int n = size();
+                    int n = getSize();
                     final Object[] a = new Object[mItems.length];
 
                     // For example:

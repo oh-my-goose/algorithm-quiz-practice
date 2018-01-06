@@ -4,6 +4,7 @@ import java.util.Locale;
 public class RandomizedQuqueTest {
 
     public static void main(String[] args) {
+        System.out.println("=== Test1 ===");
         // Test 1: double the capacity and shrink it.
         final RandomizedQueue<String> d1 = new RandomizedQueue<>();
         assert d1.size() == 0;
@@ -47,26 +48,42 @@ public class RandomizedQuqueTest {
         assert d1.size() == 0;
 
         // Test 2: Sampling.
+        System.out.println("=== Test2 ===");
+        final int size = 65;
+        final int[] check = new int[size];
+        final RandomizedQueue<Integer> d2 = new RandomizedQueue<>();
 
+        // Enqueue
+        for (int i = 0; i < size; ++i) {
+            d2.enqueue(i);
+        }
 
-        // Test 2: Iteration.
-//        final Deque<String> d2 = new Deque<>();
-//        d2.addFirst("3");
-//        d2.addFirst("2");
-//        d2.addLast("4");
-//        d2.addFirst("1");
-//        d2.addLast("5");
-//        d2.addLast("6");
-//
-//        int count = 0;
-//        final Iterator<String> it2 = d2.iterator();
-//        while (it2.hasNext()) {
-//            final String s = it2.next();
-//
-//            System.out.println(s);
-//
-//            ++count;
-//        }
-//        assert count == 6;
+        // Sample.
+        for (int i = 0; i < size; ++i) {
+            int j = d2.sample();
+            ++check[j];
+        }
+
+        // Verify the result.
+        for (int count : check) {
+            assert count == 1;
+        }
+        System.out.println("Confirm the sampling didn't collide.");
+
+        // Test 3: Iteration.
+        System.out.println("=== Test2 ===");
+        final RandomizedQueue<String> d3 = new RandomizedQueue<>();
+        d3.enqueue("3");
+        d3.enqueue("2");
+        d3.enqueue("1");
+
+        final Iterator<String> it3 = d3.iterator();
+        System.out.println(String.format(
+                Locale.ENGLISH, "e=%s, queue=%s", it3.next(), d3));
+        System.out.println(String.format(
+                Locale.ENGLISH, "e=%s, queue=%s", it3.next(), d3));
+        System.out.println(String.format(
+                Locale.ENGLISH, "e=%s, queue=%s", it3.next(), d3));
+        assert !it3.hasNext();
     }
 }
