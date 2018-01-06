@@ -156,7 +156,10 @@ public class Deque<Item> implements Iterable<Item> {
         }
 
         synchronized (mMutex) {
-            final Item item = (Item) mItems[--mTail];
+            if (--mTail < 0) {
+                mTail += mItems.length;
+            }
+            final Item item = (Item) mItems[mTail];
 
             // Unset the reference.
             mItems[mTail] = null;
