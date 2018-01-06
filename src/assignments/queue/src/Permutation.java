@@ -1,25 +1,29 @@
+import java.util.Iterator;
 import java.util.Scanner;
 
 public class Permutation {
 
     public static void main(String[] args) {
-        final Deque<String> deque = new Deque<>();
+        if (args.length == 0 ||
+            args[0].equalsIgnoreCase("-h") ||
+            args[0].equalsIgnoreCase("--help")) {
+            System.out.print("Permutation 3 < duplicates.txt");
+        }
 
-        System.out.println("Enter string to push to the Deque;" +
-                           " - to pop from the Deque;" +
-                           " eof to stop.");
-
+        final RandomizedQueue<String> queue = new RandomizedQueue<>();
         final Scanner in = new Scanner(System.in);
         while (in.hasNext()) {
             final String s = in.next();
             if (s.equalsIgnoreCase("eof")) {
                 break;
-            } else if (s.equalsIgnoreCase("-")) {
-                deque.removeFirst();
             } else {
-                deque.addFirst(s);
+                queue.enqueue(s);
             }
-            System.out.println(deque.toString());
+        }
+
+        final Iterator<String> it = queue.iterator();
+        while (it.hasNext()) {
+            System.out.println(it.next());
         }
     }
 }
