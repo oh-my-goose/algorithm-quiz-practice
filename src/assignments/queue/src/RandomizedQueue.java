@@ -1,3 +1,5 @@
+import edu.princeton.cs.algs4.StdRandom;
+
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -46,33 +48,27 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
     private static final int DEFAULT_CAPACITY = 8;
 
-    // Mutex.
-    private final Object mMutex = new Object();
-
     // Resizing array.
-    private volatile Object[] mItems;
-    private volatile int mHead;
-    private volatile int mTail;
+    private Object[] mItems;
+    private int mHead;
+    private int mTail;
 
     // For sampling.
     private Iterator<Item> mIterator;
 
     public RandomizedQueue() {
         mItems = new Object[DEFAULT_CAPACITY];
-        mHead = mTail = 0;
+        mHead = 0;
+        mTail = 0;
         mIterator = iterator();
     }
 
     public boolean isEmpty() {
-        synchronized (mMutex) {
-            return mHead == mTail;
-        }
+        return mHead == mTail;
     }
 
     public int size() {
-        synchronized (mMutex) {
-            return getSize();
-        }
+        return getSize();
     }
 
     public void enqueue(Item item) {
@@ -80,29 +76,27 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
             throw new IllegalArgumentException("null item.");
         }
 
-        synchronized (mMutex) {
-            // Overflow.
-            if (--mHead < 0) {
-                // In ArrayDeque implementation, it is written in one line as:
-                //
-                //   head = (head - 1) & (elements.length - 1)
-                //
-                // It works because the elements.length is the powers of TWO!
-                // elements.length - 1 is sort of a complement operation.
-                // This value could be used to get the positive remainder of the
-                // HEAD.
-                mHead += mItems.length;
-            }
-            mItems[mHead] = item;
-
-            // Ensure the pool is large enough.
-            if (mHead == mTail) {
-                doubleCapacity();
-            }
-
-            // Reset the sampling iterator.
-            mIterator = iterator();
+        // Overflow.
+        if (--mHead < 0) {
+            // In ArrayDeque implementation, it is written in one line as:
+            //
+            //   head = (head - 1) & (elements.length - 1)
+            //
+            // It works because the elements.length is the powers of TWO!
+            // elements.length - 1 is sort of a complement operation.
+            // This value could be used to get the positive remainder of the
+            // HEAD.
+            mHead += mItems.length;
         }
+        mItems[mHead] = item;
+
+        // Ensure the pool is large enough.
+        if (mHead == mTail) {
+            doubleCapacity();
+        }
+
+        // Reset the sampling iterator.
+        mIterator = iterator();
     }
 
     public Item dequeue() {
@@ -111,51 +105,49 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
                     "Cannot remove item from an empty deque.");
         }
 
-        synchronized (mMutex) {
-            // Example:
-            // a=[ , , ,_,_,_,_,_]
-            //    t     h
-            //
-            // Random choose one element:
-            // a=[ , , ,_,_,c,_,_]
-            //    t     h
-            //
-            // Switch with the tail element with the random chosen one:
-            // a=[ , , ,_,_,_,_,c]
-            //    t     h
-            //
-            // Return the chosen one and update tail cursor.
-            // a=[ , , ,_,_,_,_, ]
-            //          h       t
+        // Example:
+        // a=[ , , ,_,_,_,_,_]
+        //    t     h
+        //
+        // Random choose one element:
+        // a=[ , , ,_,_,c,_,_]
+        //    t     h
+        //
+        // Switch with the tail element with the random chosen one:
+        // a=[ , , ,_,_,_,_,c]
+        //    t     h
+        //
+        // Return the chosen one and update tail cursor.
+        // a=[ , , ,_,_,_,_, ]
+        //          h       t
 
-            // Step 1: Randomly choose an element.
-            int size = getSize();
-            int cursor = mHead + (int) Math.floor(size * Math.random());
-            if (cursor >= mItems.length) cursor %= mItems.length;
-            final Item chosen = (Item) mItems[cursor];
+        // Step 1: Randomly choose an element.
+        int size = getSize();
+        int cursor = mHead + (int) Math.floor(size * StdRandom.uniform());
+        if (cursor >= mItems.length) cursor %= mItems.length;
+        final Item chosen = (Item) mItems[cursor];
 
-            // Step 2: Get the tail element.
-            if (--mTail < 0) {
-                mTail += mItems.length;
-            }
-            final Item tail = (Item) mItems[mTail];
-
-            // Step 3: Exchange two and erase the tail.
-            mItems[cursor] = tail;
-            mItems[mTail] = null;
-
-            // Recycle the memory.
-            if (--size < mItems.length / 4) {
-                shrinkCapacity(size);
-            }
-
-            // TODO: Probably update the iterator's cached tail so that the
-            // TODO: uniform random distribution is guaranteed.
-            // Reset the sample iterator.
-            mIterator = iterator();
-
-            return chosen;
+        // Step 2: Get the tail element.
+        if (--mTail < 0) {
+            mTail += mItems.length;
         }
+        final Item tail = (Item) mItems[mTail];
+
+        // Step 3: Exchange two and erase the tail.
+        mItems[cursor] = tail;
+        mItems[mTail] = null;
+
+        // Recycle the memory.
+        if (--size < mItems.length / 4) {
+            shrinkCapacity(size);
+        }
+
+        // TODO: Probably update the iterator's cached tail so that the
+        // TODO: uniform random distribution is guaranteed.
+        // Reset the sample iterator.
+        mIterator = iterator();
+
+        return chosen;
     }
 
     public Item sample() {
@@ -164,13 +156,11 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
                     "Cannot remove item from an empty deque.");
         }
 
-        synchronized (mMutex) {
-            if (mIterator.hasNext()) {
-                return mIterator.next();
-            } else {
-                mIterator = iterator();
-                return mIterator.next();
-            }
+        if (mIterator.hasNext()) {
+            return mIterator.next();
+        } else {
+            mIterator = iterator();
+            return mIterator.next();
         }
     }
 
@@ -288,7 +278,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         // not equal to the tail, there must be a ConcurrentModificationException.
         private final int mCachedTail;
         // For random access.
-        private volatile int mCachedSize;
+        private int mCachedSize;
 
         private RandomizedIterator(int size) {
             mCachedSize = size;
@@ -312,20 +302,18 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
                 throw new ConcurrentModificationException();
             }
 
-            synchronized (mMutex) {
-                int cursor = mHead + (int) Math.floor(mCachedSize * Math.random());
-                if (cursor >= mItems.length) cursor %= mItems.length;
-                final Item chosen = (Item) mItems[cursor];
+            int cursor = mHead + (int) Math.floor(mCachedSize * StdRandom.uniform());
+            if (cursor >= mItems.length) cursor %= mItems.length;
+            final Item chosen = (Item) mItems[cursor];
 
-                int cursorLast = mHead + (--mCachedSize);
-                if (cursorLast >= mItems.length) cursorLast %= mItems.length;
-                final Item last = (Item) mItems[cursorLast];
+            int cursorLast = mHead + (--mCachedSize);
+            if (cursorLast >= mItems.length) cursorLast %= mItems.length;
+            final Item last = (Item) mItems[cursorLast];
 
-                mItems[cursor] = last;
-                mItems[cursorLast] = chosen;
+            mItems[cursor] = last;
+            mItems[cursorLast] = chosen;
 
-                return chosen;
-            }
+            return chosen;
         }
 
         @Override
@@ -336,19 +324,17 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
                 throw new ConcurrentModificationException();
             }
 
-            synchronized (mMutex) {
-                // Adjust array.
-                adjustElements();
+            // Adjust array.
+            adjustElements();
 
-                // Left-shift everything that is to the right of current.
-                final int cursor = mHead + mCachedSize;
-                final int rightToCursor = cursor + 1;
-                System.arraycopy(
-                        mItems, rightToCursor,
-                        mItems, cursor, mItems.length - rightToCursor);
-                mItems[mTail--] = null;
-                mCachedSize = mTail;
-            }
+            // Left-shift everything that is to the right of current.
+            final int cursor = mHead + mCachedSize;
+            final int rightToCursor = cursor + 1;
+            System.arraycopy(
+                    mItems, rightToCursor,
+                    mItems, cursor, mItems.length - rightToCursor);
+            mItems[mTail--] = null;
+            mCachedSize = mTail;
         }
 
         private void adjustElements() {
@@ -407,14 +393,12 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         public boolean hasNext() {
             if (isEmpty()) return false;
 
-            synchronized (mMutex) {
-                int dist = mCurrent - mHead;
-                if (dist < 0) {
-                    dist += mItems.length;
-                }
-
-                return dist < getSize();
+            int dist = mCurrent - mHead;
+            if (dist < 0) {
+                dist += mItems.length;
             }
+
+            return dist < getSize();
         }
 
         @Override
@@ -423,15 +407,13 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
                 throw new NoSuchElementException();
             }
 
-            synchronized (mMutex) {
-                final Item item = (Item) mItems[mCurrent];
+            final Item item = (Item) mItems[mCurrent];
 
-                if (++mCurrent >= mItems.length) {
-                    mCurrent %= mItems.length;
-                }
-
-                return item;
+            if (++mCurrent >= mItems.length) {
+                mCurrent %= mItems.length;
             }
+
+            return item;
         }
 
         @Override
@@ -440,36 +422,34 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
                 throw new UnsupportedOperationException();
             }
 
-            synchronized (mMutex) {
-                // Adjust array.
-                if (mHead > mTail) {
-                    int n = getSize();
-                    final Object[] a = new Object[mItems.length];
+            // Adjust array.
+            if (mHead > mTail) {
+                int n = getSize();
+                final Object[] a = new Object[mItems.length];
 
-                    // For example:
-                    // a=[_,_,_,_, , ,_,_]
-                    //            t   h
+                // For example:
+                // a=[_,_,_,_, , ,_,_]
+                //            t   h
 
-                    int rightN = mItems.length - mHead;
-                    System.arraycopy(mItems, mHead, a, 0, rightN);
-                    System.arraycopy(mItems, 0, a, rightN, mTail);
+                int rightN = mItems.length - mHead;
+                System.arraycopy(mItems, mHead, a, 0, rightN);
+                System.arraycopy(mItems, 0, a, rightN, mTail);
 
-                    mItems = a;
+                mItems = a;
 
-                    int offset = mCurrent - mHead;
-                    if (offset < 0) offset += mItems.length;
-                    mCurrent = offset;
+                int offset = mCurrent - mHead;
+                if (offset < 0) offset += mItems.length;
+                mCurrent = offset;
 
-                    mHead = 0;
-                    mTail = n;
-                }
-
-                // Left-shift everything that is to the right of current.
-                System.arraycopy(
-                        mItems, mCurrent + 1,
-                        mItems, mCurrent, mTail - mCurrent - 1);
-                mItems[mTail--] = null;
+                mHead = 0;
+                mTail = n;
             }
+
+            // Left-shift everything that is to the right of current.
+            System.arraycopy(
+                    mItems, mCurrent + 1,
+                    mItems, mCurrent, mTail - mCurrent - 1);
+            mItems[mTail--] = null;
         }
 
         private boolean checkIfOperationInvalid() {

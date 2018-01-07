@@ -1,5 +1,6 @@
+import edu.princeton.cs.algs4.StdIn;
+
 import java.util.Iterator;
-import java.util.Scanner;
 
 public class Permutation {
 
@@ -10,10 +11,11 @@ public class Permutation {
             System.out.print("Permutation 3 < duplicates.txt");
         }
 
+        final int printSize = Integer.parseInt(args[0]);
+
         final RandomizedQueue<String> queue = new RandomizedQueue<>();
-        final Scanner in = new Scanner(System.in);
-        while (in.hasNext()) {
-            final String s = in.next();
+        while (StdIn.isEmpty()) {
+            final String s = StdIn.readString();
             if (s.equalsIgnoreCase("eof")) {
                 break;
             } else {
@@ -21,8 +23,9 @@ public class Permutation {
             }
         }
 
+        int i = 0;
         final Iterator<String> it = queue.iterator();
-        while (it.hasNext()) {
+        while (it.hasNext() && i++ < printSize) {
             System.out.println(it.next());
         }
     }

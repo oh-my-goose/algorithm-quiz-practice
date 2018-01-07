@@ -1,3 +1,4 @@
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -48,9 +49,6 @@ public class Deque<Item> implements Iterable<Item> {
 
     private static final int DEFAULT_CAPACITY = 8;
 
-    // Mutex.
-    private final Object mMutex = new Object();
-
     // Resizing array.
     private Object[] mItems;
     private int mHead;
@@ -62,15 +60,11 @@ public class Deque<Item> implements Iterable<Item> {
     }
 
     public boolean isEmpty() {
-        synchronized (mMutex) {
-            return mHead == mTail;
-        }
+        return mHead == mTail;
     }
 
     public int size() {
-        synchronized (mMutex) {
-            return getSize();
-        }
+        return getSize();
     }
 
     public void addFirst(Item item) {
@@ -78,25 +72,25 @@ public class Deque<Item> implements Iterable<Item> {
             throw new IllegalArgumentException("null item.");
         }
 
-        synchronized (mMutex) {
-            // Overflow.
-            if (--mHead < 0) {
-                // In ArrayDeque implementation, it is written in one line as:
-                //
-                //   head = (head - 1) & (elements.length - 1)
-                //
-                // It works because the elements.length is the powers of TWO!
-                // elements.length - 1 is sort of a complement operation.
-                // This value could be used to get the positive remainder of the
-                // HEAD.
-                mHead += mItems.length;
-            }
-            mItems[mHead] = item;
+        --mHead;
 
-            // Ensure the pool is large enough.
-            if (mHead == mTail) {
-                doubleCapacity();
-            }
+        // Overflow.
+        if (mHead < 0) {
+            // In ArrayDeque implementation, it is written in one line as:
+            //
+            //   head = (head - 1) & (elements.length - 1)
+            //
+            // It works because the elements.length is the powers of TWO!
+            // elements.length - 1 is sort of a complement operation.
+            // This value could be used to get the positive remainder of the
+            // HEAD.
+            mHead += mItems.length;
+        }
+        mItems[mHead] = item;
+
+        // Ensure the pool is large enough.
+        if (mHead == mTail) {
+            doubleCapacity();
         }
     }
 
@@ -105,24 +99,22 @@ public class Deque<Item> implements Iterable<Item> {
             throw new IllegalArgumentException("null item.");
         }
 
-        synchronized (mMutex) {
-            mItems[mTail++] = item;
-            if (mTail >= mItems.length) {
-                // In ArrayDeque implementation, it is written in one line as:
-                //
-                //   head = (head - 1) & (elements.length - 1)
-                //
-                // It works because the elements.length is the powers of TWO!
-                // elements.length - 1 is sort of a complement operation.
-                // This value could be used to get the positive remainder of the
-                // HEAD.
-                mTail %= mItems.length;
-            }
+        mItems[mTail++] = item;
+        if (mTail >= mItems.length) {
+            // In ArrayDeque implementation, it is written in one line as:
+            //
+            //   head = (head - 1) & (elements.length - 1)
+            //
+            // It works because the elements.length is the powers of TWO!
+            // elements.length - 1 is sort of a complement operation.
+            // This value could be used to get the positive remainder of the
+            // HEAD.
+            mTail %= mItems.length;
+        }
 
-            // Ensure the pool is large enough.
-            if (mHead == mTail) {
-                doubleCapacity();
-            }
+        // Ensure the pool is large enough.
+        if (mHead == mTail) {
+            doubleCapacity();
         }
     }
 
@@ -132,21 +124,19 @@ public class Deque<Item> implements Iterable<Item> {
                     "Cannot remove item from an empty deque.");
         }
 
-        synchronized (mMutex) {
-            final Item item = (Item) mItems[mHead];
-            mItems[mHead] = null;
-            if (++mHead >= mItems.length) {
-                mHead %= mItems.length;
-            }
-
-            // Recycle the memory.
-            final int size = getSize();
-            if (size < mItems.length / 4) {
-                shrinkCapacity(size);
-            }
-
-            return item;
+        final Item item = (Item) mItems[mHead];
+        mItems[mHead] = null;
+        if (++mHead >= mItems.length) {
+            mHead %= mItems.length;
         }
+
+        // Recycle the memory.
+        final int size = getSize();
+        if (size < mItems.length / 4) {
+            shrinkCapacity(size);
+        }
+
+        return item;
     }
 
     public Item removeLast() {
@@ -155,23 +145,21 @@ public class Deque<Item> implements Iterable<Item> {
                     "Cannot remove item from an empty deque.");
         }
 
-        synchronized (mMutex) {
-            if (--mTail < 0) {
-                mTail += mItems.length;
-            }
-            final Item item = (Item) mItems[mTail];
-
-            // Unset the reference.
-            mItems[mTail] = null;
-
-            // Recycle the memory.
-            final int size = getSize();
-            if (size < mItems.length / 4) {
-                shrinkCapacity(size);
-            }
-
-            return item;
+        if (--mTail < 0) {
+            mTail += mItems.length;
         }
+        final Item item = (Item) mItems[mTail];
+
+        // Unset the reference.
+        mItems[mTail] = null;
+
+        // Recycle the memory.
+        final int size = getSize();
+        if (size < mItems.length / 4) {
+            shrinkCapacity(size);
+        }
+
+        return item;
     }
 
     public Iterator<Item> iterator() {
@@ -277,79 +265,83 @@ public class Deque<Item> implements Iterable<Item> {
 
     private class Head2TailIterator implements Iterator<Item> {
 
+        private final int mCachedHead;
+        private final int mCachedTail;
+
         private int mCurrent;
 
         private Head2TailIterator(int head) {
             mCurrent = head;
+
+            mCachedHead = mHead;
+            mCachedTail = mTail;
         }
 
         @Override
         public boolean hasNext() {
             if (isEmpty()) return false;
 
-            synchronized (mMutex) {
-                int dist = mCurrent - mHead;
-                if (dist < 0) {
-                    dist += mItems.length;
-                }
-
-                return dist < getSize();
+            int dist = mCurrent - mHead;
+            if (dist < 0) {
+                dist += mItems.length;
             }
+
+            return dist < getSize();
         }
 
         @Override
         public Item next() {
             if (checkIfOperationInvalid()) {
                 throw new NoSuchElementException();
+            } else if (checkIfConcurrentModification()) {
+                throw new ConcurrentModificationException();
             }
 
-            synchronized (mMutex) {
-                final Item item = (Item) mItems[mCurrent];
+            final Item item = (Item) mItems[mCurrent];
 
-                if (++mCurrent >= mItems.length) {
-                    mCurrent %= mItems.length;
-                }
-
-                return item;
+            if (++mCurrent >= mItems.length) {
+                mCurrent %= mItems.length;
             }
+
+            return item;
         }
 
         @Override
         public void remove() {
             if (checkIfOperationInvalid()) {
                 throw new UnsupportedOperationException();
+            } else if (checkIfConcurrentModification()) {
+                throw new ConcurrentModificationException();
             }
 
-            synchronized (mMutex) {
-                // Adjust array.
-                if (mHead > mTail) {
-                    int n = size();
-                    final Object[] a = new Object[mItems.length];
+            // Adjust array.
+            if (mHead > mTail) {
+                int n = size();
+                final Object[] a = new Object[mItems.length];
 
-                    // For example:
-                    // a=[_,_,_,_, , ,_,_]
-                    //            t   h
+                // For example:
+                // a=[_,_,_,_, , ,_,_]
+                //            t   h
 
-                    int rightN = mItems.length - mHead;
-                    System.arraycopy(mItems, mHead, a, 0, rightN);
-                    System.arraycopy(mItems, 0, a, rightN, mTail);
+                int rightN = mItems.length - mHead;
+                System.arraycopy(mItems, mHead, a, 0, rightN);
+                System.arraycopy(mItems, 0, a, rightN, mTail);
 
-                    mItems = a;
+                mItems = a;
 
-                    int offset = mCurrent - mHead;
-                    if (offset < 0) offset += mItems.length;
-                    mCurrent = offset;
+                int offset = mCurrent - mHead;
+                if (offset < 0) offset += mItems.length;
+                mCurrent = offset;
 
-                    mHead = 0;
-                    mTail = n;
-                }
-
-                // Left-shift everything that is to the right of current.
-                System.arraycopy(
-                        mItems, mCurrent + 1,
-                        mItems, mCurrent, mTail - mCurrent - 1);
-                mItems[mTail--] = null;
+                mHead = 0;
+                mTail = n;
             }
+
+            // Left-shift everything that is to the right of current.
+            System.arraycopy(
+                    mItems, mCurrent + 1,
+                    mItems, mCurrent, mTail - mCurrent - 1);
+            mItems[mTail--] = null;
         }
 
         private boolean checkIfOperationInvalid() {
@@ -364,6 +356,11 @@ public class Deque<Item> implements Iterable<Item> {
             } else {
                 return mCurrent >= mTail && mCurrent < mHead;
             }
+        }
+
+        private boolean checkIfConcurrentModification() {
+            return mCachedHead != mHead ||
+                   mCachedTail != mTail;
         }
     }
 }
