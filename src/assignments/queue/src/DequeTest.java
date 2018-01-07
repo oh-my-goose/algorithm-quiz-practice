@@ -4,6 +4,7 @@ public class DequeTest {
 
     public static void main(String[] args) {
         // Test 1: double the capacity and shrink it.
+        System.out.println("=== Test1 ===");
         final Deque<String> d1 = new Deque<>();
         assert d1.size() == 0;
         assert d1.isEmpty();
@@ -30,6 +31,7 @@ public class DequeTest {
         assert d1.size() == 2;
 
         // Test 2: Iteration.
+        System.out.println("=== Test2 ===");
         final Deque<String> d2 = new Deque<>();
         d2.addFirst("3");
         d2.addFirst("2");
@@ -48,5 +50,15 @@ public class DequeTest {
             ++count;
         }
         assert count == 6;
+
+        // Test 3: ...
+        System.out.println("=== Test3 ===");
+        final Deque<Integer> d3 = new Deque<>();
+        d3.addFirst(2);
+        d3.addFirst(1);
+
+        final Iterator<Integer> it3 = d3.iterator();
+        it3.next();
+        it3.next();
     }
 }

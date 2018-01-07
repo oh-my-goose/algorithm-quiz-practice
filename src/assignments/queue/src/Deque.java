@@ -47,16 +47,15 @@ import java.util.NoSuchElementException;
  */
 public class Deque<Item> implements Iterable<Item> {
 
-    private static final int DEFAULT_CAPACITY = 8;
-
     // Resizing array.
-    private Object[] mItems;
+    private Item[] mItems;
     private int mHead;
     private int mTail;
 
     public Deque() {
-        mItems = new Object[DEFAULT_CAPACITY];
-        mHead = mTail = 0;
+        mItems = (Item[]) new Object[1 << 3];
+        mHead = 0;
+        mTail = 0;
     }
 
     public boolean isEmpty() {
@@ -124,9 +123,9 @@ public class Deque<Item> implements Iterable<Item> {
                     "Cannot remove item from an empty deque.");
         }
 
-        final Item item = (Item) mItems[mHead];
-        mItems[mHead] = null;
-        if (++mHead >= mItems.length) {
+        final Item item = mItems[mHead];
+        mItems[mHead++] = null;
+        if (mHead >= mItems.length) {
             mHead %= mItems.length;
         }
 
@@ -145,10 +144,12 @@ public class Deque<Item> implements Iterable<Item> {
                     "Cannot remove item from an empty deque.");
         }
 
-        if (--mTail < 0) {
+        // Decrease tail.
+        --mTail;
+        if (mTail < 0) {
             mTail += mItems.length;
         }
-        final Item item = (Item) mItems[mTail];
+        final Item item = mItems[mTail];
 
         // Unset the reference.
         mItems[mTail] = null;
@@ -195,7 +196,7 @@ public class Deque<Item> implements Iterable<Item> {
             throw new IllegalStateException("Sorry, the deque is too large.");
         }
 
-        final Object[] a = new Object[newCapacity];
+        final Item[] a = (Item[]) new Object[newCapacity];
 
         // For example:
         // a=[_,_,_,_, , ,_,_]
@@ -237,7 +238,7 @@ public class Deque<Item> implements Iterable<Item> {
 
         final int capacity = mItems.length;
         final int newCapacity = capacity >> 1;
-        final Object[] a = new Object[newCapacity];
+        final Item[] a = (Item[]) new Object[newCapacity];
 
         for (int i = mHead, j = 0; i < mHead + size; ++i, ++j) {
             int k = i >= mItems.length ? i % mItems.length : i;
@@ -297,9 +298,9 @@ public class Deque<Item> implements Iterable<Item> {
                 throw new ConcurrentModificationException();
             }
 
-            final Item item = (Item) mItems[mCurrent];
+            final Item item = mItems[mCurrent++];
 
-            if (++mCurrent >= mItems.length) {
+            if (mCurrent >= mItems.length) {
                 mCurrent %= mItems.length;
             }
 
@@ -308,40 +309,44 @@ public class Deque<Item> implements Iterable<Item> {
 
         @Override
         public void remove() {
-            if (checkIfOperationInvalid()) {
-                throw new UnsupportedOperationException();
-            } else if (checkIfConcurrentModification()) {
-                throw new ConcurrentModificationException();
-            }
+            // The requirement of the assignment.
+            throw new UnsupportedOperationException();
 
-            // Adjust array.
-            if (mHead > mTail) {
-                int n = size();
-                final Object[] a = new Object[mItems.length];
-
-                // For example:
-                // a=[_,_,_,_, , ,_,_]
-                //            t   h
-
-                int rightN = mItems.length - mHead;
-                System.arraycopy(mItems, mHead, a, 0, rightN);
-                System.arraycopy(mItems, 0, a, rightN, mTail);
-
-                mItems = a;
-
-                int offset = mCurrent - mHead;
-                if (offset < 0) offset += mItems.length;
-                mCurrent = offset;
-
-                mHead = 0;
-                mTail = n;
-            }
-
-            // Left-shift everything that is to the right of current.
-            System.arraycopy(
-                    mItems, mCurrent + 1,
-                    mItems, mCurrent, mTail - mCurrent - 1);
-            mItems[mTail--] = null;
+            // Following code is workable
+//            if (checkIfOperationInvalid()) {
+//                throw new UnsupportedOperationException();
+//            } else if (checkIfConcurrentModification()) {
+//                throw new ConcurrentModificationException();
+//            }
+//
+//            // Adjust array.
+//            if (mHead > mTail) {
+//                int n = size();
+//                final Object[] a = new Object[mItems.length];
+//
+//                // For example:
+//                // a=[_,_,_,_, , ,_,_]
+//                //            t   h
+//
+//                int rightN = mItems.length - mHead;
+//                System.arraycopy(mItems, mHead, a, 0, rightN);
+//                System.arraycopy(mItems, 0, a, rightN, mTail);
+//
+//                mItems = a;
+//
+//                int offset = mCurrent - mHead;
+//                if (offset < 0) offset += mItems.length;
+//                mCurrent = offset;
+//
+//                mHead = 0;
+//                mTail = n;
+//            }
+//
+//            // Left-shift everything that is to the right of current.
+//            System.arraycopy(
+//                    mItems, mCurrent + 1,
+//                    mItems, mCurrent, mTail - mCurrent - 1);
+//            mItems[mTail--] = null;
         }
 
         private boolean checkIfOperationInvalid() {

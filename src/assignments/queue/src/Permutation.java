@@ -1,4 +1,5 @@
 import edu.princeton.cs.algs4.StdIn;
+import edu.princeton.cs.algs4.StdOut;
 
 import java.util.Iterator;
 
@@ -8,7 +9,7 @@ public class Permutation {
         if (args.length == 0 ||
             args[0].equalsIgnoreCase("-h") ||
             args[0].equalsIgnoreCase("--help")) {
-            System.out.print("Permutation 3 < duplicates.txt");
+            StdOut.println("Permutation 3 < duplicates.txt");
         }
 
         final int printSize = Integer.parseInt(args[0]);
@@ -25,8 +26,9 @@ public class Permutation {
 
         int i = 0;
         final Iterator<String> it = queue.iterator();
-        while (it.hasNext() && i++ < printSize) {
-            System.out.println(it.next());
+        while (it.hasNext() && i < printSize) {
+            StdOut.println(it.next());
+            ++i;
         }
     }
 }

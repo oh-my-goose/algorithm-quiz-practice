@@ -49,37 +49,44 @@ public class RandomizedQuqueTest {
 
         // Test 2: Sampling.
         System.out.println("=== Test2 ===");
-        final int size = 65;
-        final int[] check = new int[size];
-        final RandomizedQueue<Integer> d2 = new RandomizedQueue<>();
+        final int size = 4;
+        final int[] check1 = new int[size];
+        final int[] check2 = new int[size];
+        final RandomizedQueue<Integer> d2_1 = new RandomizedQueue<>();
+        final RandomizedQueue<Integer> d2_2 = new RandomizedQueue<>();
 
         // Enqueue
         for (int i = 0; i < size; ++i) {
-            d2.enqueue(i);
+            d2_1.enqueue(i);
+            d2_2.enqueue(i);
         }
 
-        // Sample.
+        // Two parallel sampling iterations.
+        Iterator<Integer> it2_1 = d2_1.iterator();
+        Iterator<Integer> it2_2 = d2_2.iterator();
         for (int i = 0; i < size; ++i) {
-            int j = d2.sample();
-            ++check[j];
-        }
+            int v1 = it2_1.next();
+            ++check1[v1];
 
+            int v2 = it2_2.next();
+            ++check2[v2];
+        }
         // Verify the result.
-        for (int count : check) {
+        for (int count : check1) {
+            assert count == 1;
+        }
+        for (int count : check2) {
             assert count == 1;
         }
         System.out.println("Confirm the sampling didn't collide.");
 
         // Test 3: Iteration.
-        System.out.println("=== Test2 ===");
+        System.out.println("=== Test3 ===");
         final RandomizedQueue<String> d3 = new RandomizedQueue<>();
-        d3.enqueue("3");
-        d3.enqueue("2");
         d3.enqueue("1");
+        d3.enqueue("2");
 
         final Iterator<String> it3 = d3.iterator();
-        System.out.println(String.format(
-                Locale.ENGLISH, "e=%s, queue=%s", it3.next(), d3));
         System.out.println(String.format(
                 Locale.ENGLISH, "e=%s, queue=%s", it3.next(), d3));
         System.out.println(String.format(
