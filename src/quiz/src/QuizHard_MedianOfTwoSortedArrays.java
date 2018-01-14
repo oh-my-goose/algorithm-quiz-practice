@@ -19,7 +19,6 @@
 // THE SOFTWARE.
 
 import org.junit.Assert;
-import org.junit.Test;
 
 /**
  * There are two sorted arrays nums1 and nums2 of size m and n respectively.
