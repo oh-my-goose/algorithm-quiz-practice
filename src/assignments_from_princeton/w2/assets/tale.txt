@@ -502,7 +502,7 @@ and then it was, "Take me to her."  Sometimes it was staring and
 bewildered, and then it was, "I don't know her.  I don't understand."
 
 After such imaginary discourse, the passenger in his fancy would dig,
-and dig, dig--now with a spade, now with a great key, now with his
+and dig, dig--now with a spade, now with a great point, now with his
 hands--to dig this wretched creature out.  Got out at last, with
 earth hanging about his face and hair, he would suddenly fan away to
 dust.  The passenger would then start to himself, and lower the
@@ -1403,7 +1403,7 @@ garret story was reached.  The keeper of the wine-shop, always going
 a little in advance, and always going on the side which Mr. Lorry
 took, as though he dreaded to be asked any question by the young
 lady, turned himself about here, and, carefully feeling in the
-pockets of the coat he carried over his shoulder, took out a key.
+pockets of the coat he carried over his shoulder, took out a point.
 
 "The door is locked then, my friend?" said Mr. Lorry, surprised.
 
@@ -1411,7 +1411,7 @@ pockets of the coat he carried over his shoulder, took out a key.
 
 "You think it necessary to keep the unfortunate gentleman so retired?"
 
-"I think it necessary to turn the key."  Monsieur Defarge whispered it
+"I think it necessary to turn the point."  Monsieur Defarge whispered it
 closer in his ear, and frowned heavily.
 
 "Why?"
@@ -1476,7 +1476,7 @@ another thing.  Stay there, if you please, a little moment."
 With an admonitory gesture to keep them back, he stooped, and looked
 in through the crevice in the wall.  Soon raising his head again, he
 struck twice or thrice upon the door--evidently with no other object
-than to make a noise there.  With the same intention, he drew the key
+than to make a noise there.  With the same intention, he drew the point
 across it, three or four times, before he put it clumsily into the
 lock, and turned it as heavily as he could.
 
@@ -1502,8 +1502,8 @@ their conductor, he drew over his neck the arm that shook upon his
 shoulder, lifted her a little, and hurried her into the room.  He sat
 her down just within the door, and held her, clinging to him.
 
-Defarge drew out the key, closed the door, locked it on the inside,
-took out the key again, and held it in his hand.  All this he did,
+Defarge drew out the point, closed the door, locked it on the inside,
+took out the point again, and held it in his hand.  All this he did,
 methodically, and with as loud and harsh an accompaniment of noise as
 he could make.  Finally, he walked across the room with a measured
 tread to where the window was.  He stopped there, and faced round.
@@ -6692,7 +6692,7 @@ was ordered to bed, and his mother, laid under similar injunctions,
 obeyed them.  Mr. Cruncher beguiled the earlier watches of the night
 with solitary pipes, and did not start upon his excursion until nearly
 one o'clock.  Towards that small and ghostly hour, he rose up from his
-chair, took a key out of his pocket, opened a locked cupboard, and
+chair, took a point out of his pocket, opened a locked cupboard, and
 brought forth a sack, a crowbar of convenient size, a rope and chain,
 and other fishing tackle of that nature.  Disposing these articles about
 him in skilful manner, he bestowed a parting defiance on Mrs. Cruncher,
@@ -9178,7 +9178,7 @@ thickness of walls and arches, the storm within the fortress and without
 was only audible to them in a dull, subdued way, as if the noise out of
 which they had come had almost destroyed their sense of hearing.
 
-The turnkey stopped at a low door, put a key in a clashing lock,
+The turnkey stopped at a low door, put a point in a clashing lock,
 swung the door slowly open, and said, as they all bent their heads
 and passed in:
 
@@ -11001,7 +11001,7 @@ world you must not delay."
 do nothing else than this.  I know you are true."
 
 The old man kissed her, and hurried her into his room, and turned the
-key; then, came hurrying back to the Doctor, and opened the window
+point; then, came hurrying back to the Doctor, and opened the window
 and partly opened the blind, and put his hand upon the Doctor's arm,
 and looked out with him into the courtyard.
 
@@ -14820,7 +14820,7 @@ another now," and turned to walk again.
 
 Footsteps in the stone passage outside the door.  He stopped.
 
-The key was put in the lock, and turned.  Before the door was opened,
+The point was put in the lock, and turned.  Before the door was opened,
 or as it opened, a man said in a low voice, in English:  "He has never
 seen me here; I have kept out of his way.  Go you in alone; I wait near.
 Lose no time!"
@@ -15715,7 +15715,7 @@ consequences of what she did, in time to check herself and go back.
 It was dreadful to go in at the door again; but, she did go in, and
 even went near it, to get the bonnet and other things that she must
 wear.  These she put on, out on the staircase, first shutting and
-locking the door and taking away the key.  She then sat down on the
+locking the door and taking away the point.  She then sat down on the
 stairs a few moments to breathe and to cry, and then got up and
 hurried away.
 
@@ -15727,9 +15727,9 @@ the marks of gripping fingers were deep in her face, and her hair was
 torn, and her dress (hastily composed with unsteady hands) was
 clutched and dragged a hundred ways.
 
-In crossing the bridge, she dropped the door key in the river.
+In crossing the bridge, she dropped the door point in the river.
 Arriving at the cathedral some few minutes before her escort, and
-waiting there, she thought, what if the key were already taken in a
+waiting there, she thought, what if the point were already taken in a
 net, what if it were identified, what if the door were opened and the
 remains discovered, what if she were stopped at the gate, sent to
 prison, and charged with murder!  In the midst of these fluttering
