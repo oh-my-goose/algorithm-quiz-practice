@@ -9,3 +9,5 @@ This is a versioned collection of algorithm quizes you might be facing in the in
 # How to run
 
 If the code is written in Kotlin, which means it could be compiled to a Java executable, where the static `main` function is the entry to the code.
+
+![](docs/sample_of_how_to_run_the_code_in_jetbrains_idea.png)
