@@ -31,6 +31,15 @@ class MergeIntervals {
             val solver = MergeIntervals()
 
             // Input:
+            //       [-----]
+            // +-+-+-+-+-+-+-+-+-+-+-...
+            // 0 1 2 3 4 5 6 7 8 9 10
+            Assert.assertEquals(
+                listOf(Interval(start = 3, end = 6)),
+                solver.merge(listOf(
+                    Interval(start = 3, end = 6))))
+
+            // Input:
             // [-------------------]
             //       [-----]
             // +-+-+-+-+-+-+-+-+-+-+-...
@@ -40,6 +49,18 @@ class MergeIntervals {
                 solver.merge(listOf(
                     Interval(start = 1, end = 10),
                     Interval(start = 3, end = 6))))
+
+            // Input:
+            //   [-----]
+            // -
+            // +-+-+-+-+-+-+-+-+-+-+-...
+            // 0 1 2 3 4 5 6 7 8 9 10
+            Assert.assertEquals(
+                listOf(Interval(start = 0, end = 0),
+                       Interval(start = 1, end = 4)),
+                solver.merge(listOf(
+                    Interval(start = 1, end = 4),
+                    Interval(start = 0, end = 0))))
 
             // Input:
             //   [---]
@@ -66,24 +87,31 @@ class MergeIntervals {
 
     // Solution #1 ////////////////////////////////////////////////////////////
 
+    /**
+     * 57%
+     */
     fun merge(intervals: List<Interval>): List<Interval> {
         if (intervals.isEmpty()) return emptyList()
         else if (intervals.size == 1) return intervals
 
+        println("given $intervals")
+
         // Sort in the ascending order of interval's start
-        intervals.sortedWith(Comparator { a, b ->
+        val sortedIntervals = intervals.sortedWith(Comparator { a, b ->
             return@Comparator when {
-                a.start > b.start -> -1
-                a.start < b.start -> 1
+                a.start < b.start -> -1
+                a.start > b.start -> 1
                 else -> 0
             }
         })
 
+        println("sorted $sortedIntervals")
+
         val mergedIntervals = mutableListOf<Interval>()
-        var start = intervals[0].start
-        var end = intervals[0].end
-        for (i in 1..intervals.lastIndex) {
-            val current = intervals[i]
+        var start = sortedIntervals[0].start
+        var end = sortedIntervals[0].end
+        for (i in 1..sortedIntervals.lastIndex) {
+            val current = sortedIntervals[i]
 
             if (current.start <= end) {
                 // Extend the interval because there is a overlap
@@ -91,14 +119,14 @@ class MergeIntervals {
                 end = Math.max(end, current.end)
             } else {
                 // No overlap found, add new interval
-                mergedIntervals.add(Interval(start = start, end = end))
+                mergedIntervals.add(Interval(start, end))
                 // Reset the cache
                 start = current.start
                 end = current.end
             }
         }
 
-        mergedIntervals.add(Interval(start = start, end = end))
+        mergedIntervals.add(Interval(start, end))
 
         return mergedIntervals
     }
