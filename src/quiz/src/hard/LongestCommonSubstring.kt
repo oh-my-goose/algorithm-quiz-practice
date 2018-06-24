@@ -28,6 +28,62 @@ import org.junit.Assert
  */
 class LongestCommonSubstring {
 
+    companion object {
+
+        @JvmStatic
+        fun main(args: Array<String>) {
+            val solver = LongestCommonSubstring()
+
+            //   G e e k s f o r G e e k s
+            // G 1 0 0 0 0 0 0 0 1 0 0 0 0
+            // e 0 2 0 0 0 0 0 0 0 2 1 0 0
+            // e 0 1 3 0 0 0 0 0 0 1 3 0 0
+            // k 0 0 0 4 0 0 0 0 0 0 0 4 0
+            // s 0 0 0 0 5 0 0 0 0 0 0 0 5
+            // Q 0 0 0 0 0 0 0 0 0 0 0 0 0
+            // u 0 0 0 0 0 0 0 0 0 0 0 0 0
+            // i 0 0 0 0 0 0 0 0 0 0 0 0 0
+            // z 0 0 0 0 0 0 0 0 0 0 0 0 0
+            Assert.assertEquals(5, solver.longestCommonSubstring("GeeksforGeeks",
+                                                                 "GeeksQuiz").toLong())
+
+            //   a b c d x y z
+            // x 0 0 0 0 1 0 0
+            // y 0 0 0 0 0 2 0
+            // z 0 0 0 0 0 0 3
+            // a 1 0 0 0 0 0 0
+            // b 0 2 0 0 0 0 0
+            // c 0 0 3 0 0 0 0
+            // d 0 0 0 4 0 0 0
+            Assert.assertEquals(4, solver.longestCommonSubstring("abcdxyz",
+                                                                 "xyzabcd").toLong())
+
+            //   a b x d x y z
+            // x 0 0 1 0 1 0 0
+            // y 0 0 0 0 0 2 0
+            // z 0 0 0 0 0 0 3
+            // a 1 0 0 0 0 0 0
+            // b 0 2 0 0 0 0 0
+            // c 0 0 0 0 0 0 0
+            // d 0 0 0 1 0 0 0
+            Assert.assertEquals(3, solver.longestCommonSubstring("abxdxyz",
+                                                                 "xyzabcd").toLong())
+
+            //   z x a b c d e z y
+            // y 0 0 0 0 0 0 0 0 1
+            // z 1 0 0 0 0 0 0 1 0
+            // a 0 0 1 0 0 0 0 0 0
+            // b 0 0 0 2 0 0 0 0 0
+            // c 0 0 0 0 3 0 0 0 0
+            // d 0 0 0 0 0 4 0 0 0
+            // e 0 0 0 0 0 0 5 0 0
+            // z 1 0 0 0 0 0 0 6 0
+            // x 0 2 0 0 0 0 0 0 0
+            Assert.assertEquals(6, solver.longestCommonSubstring("zxabcdezy",
+                                                                 "yzabcdezx").toLong())
+        }
+    }
+
     // Solution #1 ////////////////////////////////////////////////////////////
 
     private fun longestCommonSubstring(x: String, y: String): Int {
@@ -137,61 +193,5 @@ class LongestCommonSubstring {
         }
 
         return maxLength
-    }
-
-    companion object {
-
-        @JvmStatic
-        fun main(args: Array<String>) {
-            val test = LongestCommonSubstring()
-
-            //   G e e k s f o r G e e k s
-            // G 1 0 0 0 0 0 0 0 1 0 0 0 0
-            // e 0 2 0 0 0 0 0 0 0 2 1 0 0
-            // e 0 1 3 0 0 0 0 0 0 1 3 0 0
-            // k 0 0 0 4 0 0 0 0 0 0 0 4 0
-            // s 0 0 0 0 5 0 0 0 0 0 0 0 5
-            // Q 0 0 0 0 0 0 0 0 0 0 0 0 0
-            // u 0 0 0 0 0 0 0 0 0 0 0 0 0
-            // i 0 0 0 0 0 0 0 0 0 0 0 0 0
-            // z 0 0 0 0 0 0 0 0 0 0 0 0 0
-            Assert.assertEquals(5, test.longestCommonSubstring("GeeksforGeeks",
-                    "GeeksQuiz").toLong())
-
-            //   a b c d x y z
-            // x 0 0 0 0 1 0 0
-            // y 0 0 0 0 0 2 0
-            // z 0 0 0 0 0 0 3
-            // a 1 0 0 0 0 0 0
-            // b 0 2 0 0 0 0 0
-            // c 0 0 3 0 0 0 0
-            // d 0 0 0 4 0 0 0
-            Assert.assertEquals(4, test.longestCommonSubstring("abcdxyz",
-                    "xyzabcd").toLong())
-
-            //   a b x d x y z
-            // x 0 0 1 0 1 0 0
-            // y 0 0 0 0 0 2 0
-            // z 0 0 0 0 0 0 3
-            // a 1 0 0 0 0 0 0
-            // b 0 2 0 0 0 0 0
-            // c 0 0 0 0 0 0 0
-            // d 0 0 0 1 0 0 0
-            Assert.assertEquals(3, test.longestCommonSubstring("abxdxyz",
-                    "xyzabcd").toLong())
-
-            //   z x a b c d e z y
-            // y 0 0 0 0 0 0 0 0 1
-            // z 1 0 0 0 0 0 0 1 0
-            // a 0 0 1 0 0 0 0 0 0
-            // b 0 0 0 2 0 0 0 0 0
-            // c 0 0 0 0 3 0 0 0 0
-            // d 0 0 0 0 0 4 0 0 0
-            // e 0 0 0 0 0 0 5 0 0
-            // z 1 0 0 0 0 0 0 6 0
-            // x 0 2 0 0 0 0 0 0 0
-            Assert.assertEquals(6, test.longestCommonSubstring("zxabcdezy",
-                    "yzabcdezx").toLong())
-        }
     }
 }

@@ -5,12 +5,9 @@ import org.junit.Assert
 /**
  * There are two sorted arrays nums1 and nums2 of size m and n respectively.
  * Find the median of the two sorted arrays.
- * <br></br>
  * The overall run time complexity should be O(log (m+n)).
  *
- *
  * Example:
- * <pre>
  * case 1:
  * nums1 = [1, 3]
  * nums2 = [2]
@@ -22,13 +19,32 @@ import org.junit.Assert
  * nums2 = [3, 4]
  *
  * The median is (2 + 3)/2 = 2.5
-</pre> *
+ *
  * Reference:
  *
  *  * https://leetcode.com/problems/median-of-two-sorted-arrays/description/
  *
  */
 class MedianOfTwoSortedArrays {
+
+    companion object {
+
+        @JvmStatic
+        fun main(args: Array<String>) {
+            val test = MedianOfTwoSortedArrays()
+
+            Assert.assertEquals(2.0,
+                                test.findMedianSortedArrays(
+                                    intArrayOf(1, 3),
+                                    intArrayOf(2)),
+                                0.0)
+            Assert.assertEquals(2.5,
+                                test.findMedianSortedArrays(
+                                    intArrayOf(1, 2),
+                                    intArrayOf(3, 4)),
+                                0.0)
+        }
+    }
 
     // Solution #1 ////////////////////////////////////////////////////////////
 
@@ -133,9 +149,6 @@ class MedianOfTwoSortedArrays {
         }
     }
 
-    ///////////////////////////////////////////////////////////////////////////
-    // Protected / Private Methods ////////////////////////////////////////////
-
     private fun getPivot(begin: Int, end: Int): Int {
         // Plus one would make the half lean to right, which means the half would
         // never approach the left margin and we need to handle that corner cases.
@@ -149,25 +162,6 @@ class MedianOfTwoSortedArrays {
             Integer.MAX_VALUE
         } else {
             nums[index]
-        }
-    }
-
-    companion object {
-
-        @JvmStatic
-        fun main(args: Array<String>) {
-            val test = MedianOfTwoSortedArrays()
-
-            Assert.assertEquals(2.0,
-                    test.findMedianSortedArrays(
-                            intArrayOf(1, 3),
-                            intArrayOf(2)),
-                    0.0)
-            Assert.assertEquals(2.5,
-                    test.findMedianSortedArrays(
-                            intArrayOf(1, 2),
-                            intArrayOf(3, 4)),
-                    0.0)
         }
     }
 }

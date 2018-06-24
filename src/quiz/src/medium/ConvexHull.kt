@@ -4,13 +4,10 @@ package medium
  * The convex hull of a finite point set S in the plane is the smallest convex
  * polygon containing the set.
  *
- *
  * Given set of N points in the Euclidean plane, find minimum area convex region
  * that contains every point.
  *
- *
  * For example:
- * <pre>
  * ^
  * |
  * |                 (+)
@@ -26,7 +23,7 @@ package medium
  * +------------------------------>
  *
  * The points, (+) form a Convex Hull.
-</pre> *
+ *
  * References:
  *
  *  * https://brilliant.org/wiki/convex-hull/#_=_

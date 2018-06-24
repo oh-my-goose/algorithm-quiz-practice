@@ -8,19 +8,16 @@ import java.util.HashSet
 /**
  * Given a string s, find the longest palindromic substring in s. You may assume
  * that the maximum length of s is 1000.
- * <br></br>
+ *
  * This is case sensitive, for example "Aa" is not considered a palindrome here.
  *
- *
  * For example:
- * <pre>
  * Input: "babad"
  * Output: "bab"
  * Note: "aba" is also a valid answer.
  *
  * Input: "cbbd"
  * Output: "bb"
- * </pre>
  * References:
  *
  *  * https://leetcode.com/problems/longest-palindromic-substring/description/

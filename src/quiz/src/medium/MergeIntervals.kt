@@ -24,6 +24,46 @@ import org.junit.Assert
  */
 class MergeIntervals {
 
+    companion object {
+
+        @JvmStatic
+        fun main(args: Array<String>) {
+            val solver = MergeIntervals()
+
+            // Input:
+            // [-------------------]
+            //       [-----]
+            // +-+-+-+-+-+-+-+-+-+-+-...
+            // 0 1 2 3 4 5 6 7 8 9 10
+            Assert.assertEquals(
+                listOf(Interval(start = 1, end = 10)),
+                solver.merge(listOf(
+                    Interval(start = 1, end = 10),
+                    Interval(start = 3, end = 6))))
+
+            // Input:
+            //   [---]
+            //             [-]
+            //           [-]
+            //                 [-]
+            //                 [-]
+            //                   [-]
+            // +-+-+-+-+-+-+-+-+-+-+-...
+            // 0 1 2 3 4 5 6 7 8 9 10
+            Assert.assertEquals(
+                listOf(Interval(start = 1, end = 3),
+                       Interval(start = 5, end = 7),
+                       Interval(start = 8, end = 10)),
+                solver.merge(listOf(
+                    Interval(start = 1, end = 3),
+                    Interval(start = 6, end = 7),
+                    Interval(start = 5, end = 6),
+                    Interval(start = 8, end = 9),
+                    Interval(start = 8, end = 9),
+                    Interval(start = 9, end = 10))))
+        }
+    }
+
     // Solution #1 ////////////////////////////////////////////////////////////
 
     fun merge(intervals: List<Interval>): List<Interval> {
@@ -82,46 +122,6 @@ class MergeIntervals {
             var result = start
             result = 31 * result + end
             return result
-        }
-    }
-
-    companion object {
-
-        @JvmStatic
-        fun main(args: Array<String>) {
-            val tester = MergeIntervals()
-
-            // Input:
-            // [-------------------]
-            //       [-----]
-            // +-+-+-+-+-+-+-+-+-+-+-...
-            // 0 1 2 3 4 5 6 7 8 9 10
-            Assert.assertEquals(
-                listOf(Interval(start = 1, end = 10)),
-                tester.merge(listOf(
-                    Interval(start = 1, end = 10),
-                    Interval(start = 3, end = 6))))
-
-            // Input:
-            //   [---]
-            //             [-]
-            //           [-]
-            //                 [-]
-            //                 [-]
-            //                   [-]
-            // +-+-+-+-+-+-+-+-+-+-+-...
-            // 0 1 2 3 4 5 6 7 8 9 10
-            Assert.assertEquals(
-                listOf(Interval(start = 1, end = 3),
-                       Interval(start = 5, end = 7),
-                       Interval(start = 8, end = 10)),
-                tester.merge(listOf(
-                    Interval(start = 1, end = 3),
-                    Interval(start = 6, end = 7),
-                    Interval(start = 5, end = 6),
-                    Interval(start = 8, end = 9),
-                    Interval(start = 8, end = 9),
-                    Interval(start = 9, end = 10))))
         }
     }
 }

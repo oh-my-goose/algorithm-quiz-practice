@@ -6,24 +6,22 @@ import java.util.ArrayList
 
 /**
  * Given a set of distinct integers, nums, return all possible subsets.
- * <br></br>
+ *
  * Note: The solution set must not contain duplicate subsets.
  *
- *
- * For example,
- * <pre>
+ * For example:
  * If nums = [1,2,3], a solution is:
  * [
- * [3],
- * [1],
- * [2],
- * [1,2,3],
- * [1,3],
- * [2,3],
- * [1,2],
- * []
+ *  [3],
+ *  [1],
+ *  [2],
+ *  [1,2,3],
+ *  [1,3],
+ *  [2,3],
+ *  [1,2],
+ *  []
  * ]
-</pre> *
+ *
  * Reference:
  *
  *  * https://leetcode.com/problems/subsets/description/
@@ -31,9 +29,19 @@ import java.util.ArrayList
  */
 class PowerSet {
 
+    companion object {
+
+        @JvmStatic
+        fun main(args: Array<String>) {
+            val solver = PowerSet()
+
+            Assert.assertEquals(2, solver.powerSets(intArrayOf(1)).size)
+        }
+    }
+
     // Solution #1 ////////////////////////////////////////////////////////////
 
-    private fun powerSets(nums: IntArray): List<List<Int>> {
+    fun powerSets(nums: IntArray): List<List<Int>> {
         return powerSetsInternal(nums, nums.size)
     }
 
@@ -67,15 +75,5 @@ class PowerSet {
         }
 
         return sets
-    }
-
-    companion object {
-
-        @JvmStatic
-        fun main(args: Array<String>) {
-            val solver = PowerSet()
-
-            Assert.assertEquals(2, solver.powerSets(intArrayOf(1)).size)
-        }
     }
 }
