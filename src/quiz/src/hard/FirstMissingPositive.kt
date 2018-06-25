@@ -51,29 +51,53 @@ class FirstMissingPositive {
 
             Assert.assertEquals(1, solver.firstMissingPositive(
                 intArrayOf(7, 8, 9, 11, 12)))
+
+            Assert.assertEquals(5, solver.firstMissingPositive(
+                intArrayOf(4, -10, 3, 1, -8, 2)))
+
+            Assert.assertEquals(9, solver.firstMissingPositive(
+                intArrayOf(1, 2, 3, 4, 5, 6, 7, 8)))
         }
     }
 
     // Solution #1 ////////////////////////////////////////////////////////////
 
+    /**
+     * Beats 71%
+     */
     fun firstMissingPositive(nums: IntArray): Int {
-        // 1. One way is to use quick-sort and the time complexity is O(nlog(n)),
+        // 1. One way is to use quick-sort and the time complexity is O(n*log(n)),
         // which is relatively close to O(n).
         //
-        // 2. Another way is to benefit from the nature of consecutively climbing
-        // integer sequence, which is the element value should be equal to index+1
-        // for the best case.
-        // We scan the elements, for each element visiting, we check if the value
-        // matches the expected position. e.g., Given [1,2], the element values
-        // matches positions.
-        // If the value doesn't match, we swap the element at i, with value v, with
-        // another element at v until nothing could be swapped.
-        // We have to define what makes nothing to be swapped:
-        // a. The index of two elements are the same.
-        // b. The index of two elements' values are the same.
+        // 2. Use in place heap sort, which also has the time complexity O(n*log(n)).
+        //
+        // 3. Another way is to benefit from the nature of consecutively climbing
+        // integer sequence, which is the index indicates the value of index+1
+        // should be here.
+        //
+        // We scan the elements, for each element, we find the home of the value
+        // by putting the value to position of index of value-1, which literally is
+        // the swap of i-th and (nums[i] - 1)th elements!
 
-        // Input:           [1,3,6,4,1,2]
-        // Expected output: [1,2,3,4,1,6]
+        // For example,
+        // Given input like [4,-10,3,1,-8,2]
+        // Where i is the index; j is the value at the index minus 1
+        //
+        // n: [4,-10,3,1,-8,2]
+        // i=0, j=3, n[i]=4, n[j]=1 => swap (take "4" home)
+        //
+        // n: [1,-10,3,4,-8,2]
+        // i=0, j=0, n[i]=1, n[j]=1 => ++i
+        // i=1, j=-11 => ++i
+        // i=2, j=2, n[i]=3, n[j]=3 => ++i
+        // i=3, j=3, n[i]=4, n[j]=4 => ++i
+        // i=4, j=-9 => ++i
+        // i=5, j=1, n[i]=2, n[j]=-10 => swap (take "2" home)
+        //
+        // n: [1,2,3,4,-8,-10]
+        //
+        // Then just walk through the sorted sequence, you'd be finding the missing
+        // positive easily
 
         print("Given: ")
         print(nums)
@@ -81,9 +105,10 @@ class FirstMissingPositive {
         var i = 0
         while (i < nums.size) {
             // The index of the other element matching the value-1 at position, i.
-            val j = nums[i]
-            if (j > 0 && j < nums.size &&
-                i != j && nums[i] != nums[j]) {
+            val j = nums[i] - 1
+
+            if (j >= 0 && j < nums.size &&
+                nums[i] != nums[j]) {
                 // Swap nums[i] and nums[j]
                 val tmp = nums[i]
                 nums[i] = nums[j]
@@ -95,20 +120,12 @@ class FirstMissingPositive {
 
         print("Sorted: ")
         print(nums)
+        println("---")
 
-        var missing = 1
-        for (i in 0..nums.lastIndex) {
-            val num = nums[i]
-            if (num > 0) {
-                if (missing == num) {
-                    ++missing
-                } else {
-                    break
-                }
-            }
-        }
+        i = 0
+        while (i < nums.size && nums[i] == i + 1) ++i
 
-        return missing
+        return i + 1
     }
 
     private fun print(nums: IntArray) {
