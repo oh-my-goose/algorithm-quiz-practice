@@ -86,7 +86,7 @@ class LongestCommonSubstring {
 
     // Solution #1 ////////////////////////////////////////////////////////////
 
-    private fun longestCommonSubstring(x: String, y: String): Int {
+    private fun longestCommonSubstring(word1: String, word2: String): Int {
         // For example:
         // Given: a b x c x y z
         //    and x y z a b c
@@ -168,13 +168,16 @@ class LongestCommonSubstring {
         // And the maximum number in the matrix is 3, where it is the length of
         // "xyz".
 
-        val n = x.length
-        val m = y.length
+        val n = word1.length
+        val m = word2.length
         val map = Array(n) { IntArray(m) }
         var maxLength = 0
         for (i in 0 until n) {
             for (j in 0 until m) {
-                if (x.substring(i, i + 1) == y.substring(j, j + 1)) {
+                val c1 = word1[i]
+                val c2 = word2[j]
+
+                if (c1 == c2) {
                     // If the current characters are identical:
                     // a. 1 + length of previous common suffix.
                     // b. 1 if there is no previous common suffix.
