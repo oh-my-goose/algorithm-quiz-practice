@@ -1,6 +1,7 @@
 package medium
 
 import org.junit.Assert
+import java.lang.RuntimeException
 import java.util.*
 
 /**
@@ -31,22 +32,45 @@ class BinarySearchTree {
 
         @JvmStatic
         fun main(args: Array<String>) {
-            val tree1 = BinarySearchTree()
+            val tree = BinarySearchTree()
 
-            tree1.put(15)
-            tree1.put(10)
-            tree1.put(8)
-            tree1.put(1)
-            tree1.put(11)
-            tree1.put(30)
-            tree1.put(19)
-            tree1.put(17)
-            tree1.put(21)
-            tree1.put(25)
-            tree1.put(20)
-            tree1.put(23)
-            tree1.put(31)
-            Assert.assertEquals("1 8 10 11 15 17 19 20 21 23 25 30 31", tree1.printInOrder())
+            // "put" method test
+            tree.put(15)
+            tree.put(10)
+            tree.put(8)
+            tree.put(1)
+            tree.put(11)
+            tree.put(30)
+            tree.put(19)
+            tree.put(17)
+            tree.put(21)
+            tree.put(25)
+            tree.put(20)
+            tree.put(23)
+            tree.put(31)
+            Assert.assertEquals("1 8 10 11 15 17 19 20 21 23 25 30 31", tree.printInOrder())
+
+            // "contain" method test
+            Assert.assertTrue(tree.contains(17))
+            Assert.assertFalse(tree.contains(18))
+
+            // "floor" method test
+            try {
+                tree.floor(0)
+                throw RuntimeException()
+            } catch (ignored: Throwable) {
+                // IGNORED.
+            }
+            Assert.assertEquals(11, tree.floor(12))
+            Assert.assertEquals(17, tree.floor(18))
+            Assert.assertEquals(21, tree.floor(22))
+
+            // "ceiling" method test
+            Assert.assertEquals(1, tree.ceiling(0))
+            Assert.assertEquals(8, tree.ceiling(3))
+            Assert.assertEquals(17, tree.ceiling(16))
+
+            tree.clear()
         }
     }
 
@@ -54,23 +78,27 @@ class BinarySearchTree {
 
     // Solution #1 ////////////////////////////////////////////////////////////
 
-    fun put(key: Int) {
+    fun clear() {
+        root = null
+    }
+
+    fun put(value: Int) {
         if (root == null) {
-            root = Node(key)
+            root = Node(value)
         } else {
             var n = root
 
             while (n != null) {
-                if (key < n.key) {
+                if (value < n.value) {
                     if (n.left == null) {
-                        n.left = Node(key)
+                        n.left = Node(value)
                         break
                     } else {
                         n = n.left
                     }
-                } else if (key > n.key) {
+                } else if (value > n.value) {
                     if (n.right == null) {
-                        n.right = Node(key)
+                        n.right = Node(value)
                         break
                     } else {
                         n = n.right
@@ -84,16 +112,85 @@ class BinarySearchTree {
         TODO()
     }
 
-    fun contains(key: Int): Boolean {
+    private fun deleteMin(node: Node) {
         TODO()
     }
 
-    fun floor(key: Int): Boolean {
-        TODO()
+    fun contains(k: Int): Boolean {
+        var n = root
+        while (n != null) {
+            n = if (k < n.value) {
+                n.left
+            } else if (k > n.value) {
+                n.right
+            } else {
+                break
+            }
+        }
+
+        return n?.value == k
     }
 
-    fun ceiling(key: Int): Boolean {
-        TODO()
+    /**
+     * Find the largest number in the tree that is equal or less then [k]
+     */
+    fun floor(k: Int): Int {
+        return floor(root, k)?.value ?: throw NoSuchElementException()
+    }
+
+    private fun floor(node: Node?, k: Int): Node? {
+        return when (node) {
+            null -> null
+            else -> {
+                when {
+                    k == node.value -> {
+                        // Lucky, k is the element of the tree
+                        node
+                    }
+                    k < node.value -> {
+                        // The candidate could be in the left sub-tree
+                        floor(node.left, k)
+                    }
+                    else -> {
+                        // The candidate could be in the right sub-tree; If no
+                        // candidate is found, node is the largest number that
+                        // is equal or less than k
+                        floor(node.right, k) ?: node
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Find the smallest number in the tree that is equal or larger then [k]
+     */
+    fun ceiling(k: Int): Int {
+        return ceiling(root, k)?.value ?: throw NoSuchElementException()
+    }
+
+    private fun ceiling(node: Node?, k: Int): Node? {
+        return when (node) {
+            null -> null
+            else -> {
+                when {
+                    k == node.value -> {
+                        // Lucky, k is the element of the tree
+                        node
+                    }
+                    k > node.value -> {
+                        // The candidate could be in the right sub-tree
+                        ceiling(node.right, k)
+                    }
+                    else -> {
+                        // The candidate could be in the right sub-tree; If no
+                        // candidate is found, node is the largest number that
+                        // is equal or less than k
+                        ceiling(node.left, k) ?: node
+                    }
+                }
+            }
+        }
     }
 
     fun printInOrder(): String {
@@ -120,7 +217,7 @@ class BinarySearchTree {
             }
             else -> {
                 printInOrder(node.left, q)
-                q.offer(node.key)
+                q.offer(node.value)
                 printInOrder(node.right, q)
             }
         }
@@ -128,7 +225,7 @@ class BinarySearchTree {
 
     // Node ///////////////////////////////////////////////////////////////////
 
-    class Node(var key: Int) {
+    class Node(var value: Int) {
 
         var left: Node? = null
         var right: Node? = null
