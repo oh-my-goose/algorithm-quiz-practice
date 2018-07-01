@@ -32,45 +32,113 @@ class BinarySearchTree {
 
         @JvmStatic
         fun main(args: Array<String>) {
-            val tree = BinarySearchTree()
+            // Test set #1 ////////////////////////////////////////////////////
+            val tree1 = BinarySearchTree()
 
             // "put" method test
-            tree.put(15)
-            tree.put(10)
-            tree.put(8)
-            tree.put(1)
-            tree.put(11)
-            tree.put(30)
-            tree.put(19)
-            tree.put(17)
-            tree.put(21)
-            tree.put(25)
-            tree.put(20)
-            tree.put(23)
-            tree.put(31)
-            Assert.assertEquals("1 8 10 11 15 17 19 20 21 23 25 30 31", tree.printInOrder())
+            tree1.put(15)
+            tree1.put(10)
+            tree1.put(8)
+            tree1.put(1)
+            tree1.put(11)
+            tree1.put(30)
+            tree1.put(19)
+            tree1.put(17)
+            tree1.put(21)
+            tree1.put(25)
+            tree1.put(20)
+            tree1.put(23)
+            tree1.put(31)
+            Assert.assertEquals("1 8 10 11 15 17 19 20 21 23 25 30 31", tree1.printInOrder())
+
+            // The tree looks like:
+            //
+            //          15
+            //         /  \
+            //       10    30
+            //      / \    / \
+            //     8  11  19  31
+            //    /      / \
+            //   1      17 21
+            //            /  \
+            //           20  25
+            //              /
+            //             23
+            //
 
             // "contain" method test
-            Assert.assertTrue(tree.contains(17))
-            Assert.assertFalse(tree.contains(18))
+            Assert.assertTrue(tree1.contains(17))
+            Assert.assertFalse(tree1.contains(18))
 
             // "floor" method test
             try {
-                tree.floor(0)
+                tree1.floor(0)
                 throw RuntimeException()
             } catch (ignored: Throwable) {
                 // IGNORED.
             }
-            Assert.assertEquals(11, tree.floor(12))
-            Assert.assertEquals(17, tree.floor(18))
-            Assert.assertEquals(21, tree.floor(22))
+            Assert.assertEquals(11, tree1.floor(12))
+            Assert.assertEquals(17, tree1.floor(18))
+            Assert.assertEquals(21, tree1.floor(22))
 
             // "ceiling" method test
-            Assert.assertEquals(1, tree.ceiling(0))
-            Assert.assertEquals(8, tree.ceiling(3))
-            Assert.assertEquals(17, tree.ceiling(16))
+            Assert.assertEquals(1, tree1.ceiling(0))
+            Assert.assertEquals(8, tree1.ceiling(3))
+            Assert.assertEquals(17, tree1.ceiling(16))
 
-            tree.clear()
+            // "delete" method test
+            // Case 1: no such integer
+            tree1.delete(0)
+            Assert.assertEquals("1 8 10 11 15 17 19 20 21 23 25 30 31", tree1.printInOrder())
+            // Case 2: delete 11
+            //
+            //          15             ->          15
+            //         /  \            ->         /  \
+            //       10    30          ->       10    30
+            //      / \    / \         ->      /      / \
+            //     8 [11] 19  31       ->     8      19  31
+            //    /      / \           ->    /      / \
+            //   1      17 21          ->   1      17 21
+            //            /  \         ->            /  \
+            //           20  25        ->           20  25
+            //              /          ->              /
+            //             23          ->             23
+            //
+            tree1.delete(11)
+            Assert.assertEquals("1 8 10 15 17 19 20 21 23 25 30 31", tree1.printInOrder())
+            // Case 2: delete 19
+            //
+            //          15             ->          15
+            //         /  \            ->         /  \
+            //       10    30          ->       10    30
+            //      /      / \         ->      /      / \
+            //     8     [19] 31       ->     8      20  31
+            //    /      / \           ->    /      / \
+            //   1      17 21          ->   1      17 21
+            //            /  \         ->               \
+            //           20  25        ->               25
+            //              /          ->              /
+            //             23          ->             23
+            //
+            tree1.delete(19)
+            Assert.assertEquals("1 8 10 15 17 20 21 23 25 30 31", tree1.printInOrder())
+            // Case 2: put 18, delete 15
+            //
+            //          15             ->         [15]            ->          17
+            //         /  \            ->         /  \            ->         /  \
+            //       10    30          ->       10    30          ->       10    30
+            //      /      / \         ->      /      / \         ->      /      / \
+            //     8      19  31       ->     8      20  31       ->     8      20  31
+            //    /      / \           ->    /      / \           ->    /      / \
+            //   1      17 21          ->   1      17 21          ->   1      18 21
+            //               \         ->           \   \         ->               \
+            //               25        ->          [18] 25        ->               25
+            //              /          ->              /          ->              /
+            //             23          ->             23          ->             23
+            //
+            tree1.put(18)
+            tree1.delete(15)
+            Assert.assertEquals("1 8 10 17 18 20 21 23 25 30 31", tree1.printInOrder())
         }
     }
 
@@ -108,12 +176,78 @@ class BinarySearchTree {
         }
     }
 
-    fun delete(key: Int) {
-        TODO()
+    fun delete(k: Int) {
+        root = deleteNode(root, k)
     }
 
-    private fun deleteMin(node: Node) {
-        TODO()
+    private fun deleteNode(node: Node?, k: Int): Node? {
+        return when {
+            node == null -> null
+            k < node.value -> {
+                node.left = deleteNode(node.left, k)
+                node
+            }
+            k > node.value -> {
+                node.right = deleteNode(node.right, k)
+                node
+            }
+            else -> {
+                if (node.left == null && node.right == null) {
+                    // No child
+                    null
+                } else if(node.left == null && node.right != null) {
+                    // Promote the only right child
+                    node.right
+                } else if (node.left != null && node.right == null) {
+                    // Promote the only left child
+                    node.left
+                } else {
+                    // Has both children
+
+                    // First, find the successor in the right sub-tree, where the
+                    // successor is the smallest integer in the right sub-tree that
+                    // is larger than current integer and smaller than the right
+                    // child.
+                    val successor = min(node.right!!)
+                    successor.right = deleteMin(node.right)
+                    // The successor must not has left child, so it's simple to
+                    // assign the new left child to it.
+                    successor.left = node.left
+
+                    // Promote the successor
+                    successor
+                }
+            }
+        }
+    }
+
+    /**
+     * Find minimum integer in the sub-tree of the [node].
+     */
+    private fun min(node: Node): Node {
+        return node.left?.let { left ->
+            min(left)
+        } ?: node
+    }
+
+    /**
+     * Delete the minimum integer in the sub-tree of the [node] and return the
+     * new left child.
+     */
+    private fun deleteMin(node: Node?): Node? {
+        return if (node == null)  {
+            null
+        } else if (node.left == null && node.right == null) {
+            null
+        } else if (node.left == null && node.right != null) {
+            // Left child is null but right child is present
+            node.right
+        } else {
+            // Left child is present and no matter whether the right child is
+            // present or not
+            node.left = deleteMin(node.left)
+            node
+        }
     }
 
     fun contains(k: Int): Boolean {
