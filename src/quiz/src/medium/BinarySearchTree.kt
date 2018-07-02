@@ -6,7 +6,7 @@ import java.util.*
 
 /**
  * Please implement the [put], [delete], [contains], [floor], [ceiling], [dist],
- * [lca], [rotateRight], [rotateLeft] and [printInOrder] of an integer Binary
+ * [lca], [rotateRightAt], [rotateLeftAt] and [printInOrder] of an integer Binary
  * Search Tree.
  *
  * Example:
@@ -163,6 +163,25 @@ class BinarySearchTree {
             } catch (ignored: Throwable) {
                 // IGNORED
             }
+
+            // "rotateRightAt" method test
+            val tree2 = BinarySearchTree()
+            tree2.put(15)
+            tree2.put(10)
+            tree2.put(8)
+            tree2.put(11)
+            tree2.put(9)
+            tree2.put(1)
+            //       15    ->       15
+            //       /     ->       /
+            //     [10]    ->      8
+            //     / \     ->     / \
+            //    8   11   ->    1  [10]
+            //   / \       ->        / \
+            //  1   9      ->       9   11
+            Assert.assertEquals("1 8 9 10 11 15", tree2.printInOrder())
+            tree2.rotateRightAt(10)
+            Assert.assertEquals("1 8 9 10 11 15", tree2.printInOrder())
         }
     }
 
@@ -426,12 +445,45 @@ class BinarySearchTree {
         return ancestor
     }
 
-    fun rotateLeft(k: Int) {
+    fun rotateLeftAt(k: Int) {
         TODO()
     }
 
-    fun rotateRight(k: Int) {
-        TODO()
+    fun rotateRightAt(k: Int) {
+        //
+        //      [Q]    ->       P
+        //      / \    ->      / \
+        //     P   C   ->     A   Q
+        //    / \      ->        / \
+        //   A   B     ->       B   C
+        //
+        // path: Q -> C
+        val path = LinkedList<Int>()
+        val (pivot, pivotAncesstor) = find(root, k, path)
+        if (pivot == null) throw NoSuchElementException()
+
+        // Pivot's left child is going to be the new pivot
+        val pivotLeft = pivot.left
+        val pivotLeftRight = pivot.left?.right
+        val pivotRight = pivot.right
+        if (pivotAncesstor == null) {
+            // Construct the link in between pivot and its ancestor
+            root = pivotLeft
+        } else {
+            // Construct the link in between pivot and its ancestor
+            if (pivotAncesstor.left == pivot) {
+                pivotAncesstor.left = pivotLeft
+            } else {
+                pivotAncesstor.right = pivotRight
+            }
+        }
+
+        // Exchange pivot
+        pivotLeft?.right = pivot
+
+        // Shift pivot's left-right to pivot's left
+        pivotLeft?.right = pivot
+        pivot.left = pivotLeftRight
     }
 
     fun printInOrder(): String {
@@ -464,21 +516,36 @@ class BinarySearchTree {
         }
     }
 
-    private fun find(node: Node?, k: Int, q: Deque<Int>): Node? {
+    /**
+     * Find node and its ancestor.
+     */
+    private fun find(node: Node?, k: Int, q: Deque<Int>? = null): Pair<Node?, Node?> {
         return if (node == null) {
             // Not found at all!
-            q.clear()
-            null
+            q?.clear()
+            Pair(null, null)
         } else {
-            q.offer(node.value)
+            q?.offer(node.value)
 
             if (k < node.value) {
-                find(node.left, k , q)
+                val (candidate, ancestor) = find(node.left, k , q)
+
+                // Identify the pair of candidate and candidate's ancestor
+                if (candidate != null && ancestor == null)
+                    Pair(candidate, node)
+                else
+                    Pair(candidate, ancestor)
             } else if (k > node.value) {
-                find(node.right, k , q)
+                val (candidate, ancestor) = find(node.right, k , q)
+
+                // Identify the pair of candidate and candidate's ancestor
+                if (candidate != null && ancestor == null)
+                    Pair(candidate, node)
+                else
+                    Pair(candidate, ancestor)
             } else {
                 // Lucky, found it!
-                node
+                Pair(node, null)
             }
         }
     }
