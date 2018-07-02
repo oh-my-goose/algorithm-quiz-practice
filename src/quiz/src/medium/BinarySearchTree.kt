@@ -50,8 +50,6 @@ class BinarySearchTree {
             tree1.put(20)
             tree1.put(23)
             tree1.put(31)
-            Assert.assertEquals("1 8 10 11 15 17 19 20 21 23 25 30 31", tree1.printInOrder())
-
             // The tree looks like:
             //
             //          15
@@ -66,6 +64,8 @@ class BinarySearchTree {
             //              /
             //             23
             //
+            Assert.assertEquals("15 10 8 1 11 30 19 17 21 20 25 23 31", tree1.printPreOrder())
+            Assert.assertEquals("1 8 10 11 15 17 19 20 21 23 25 30 31", tree1.printInOrder())
 
             // "contain" method test
             Assert.assertTrue(tree1.contains(17))
@@ -172,6 +172,14 @@ class BinarySearchTree {
             tree2.put(11)
             tree2.put(9)
             tree2.put(1)
+            //       15
+            //       /
+            //      10
+            //     / \
+            //    8   11
+            //   / \
+            //  1   9
+            Assert.assertEquals("15 10 8 1 9 11", tree2.printPreOrder())
             //       15    ->       15
             //       /     ->       /
             //     [10]    ->      8
@@ -179,9 +187,17 @@ class BinarySearchTree {
             //    8   11   ->    1  [10]
             //   / \       ->        / \
             //  1   9      ->       9   11
-            Assert.assertEquals("1 8 9 10 11 15", tree2.printInOrder())
             tree2.rotateRightAt(10)
-            Assert.assertEquals("1 8 9 10 11 15", tree2.printInOrder())
+            Assert.assertEquals("15 8 1 10 9 11", tree2.printPreOrder())
+            //    [15]     ->        8
+            //     /       ->       /  \
+            //    8        ->      1   15
+            //   / \       ->          / \
+            //  1   10     ->        10
+            //      / \    ->        / \
+            //     9   11  ->       9   11
+            tree2.rotateRightAt(15)
+            Assert.assertEquals("8 1 15 10 9 11", tree2.printPreOrder())
         }
     }
 
@@ -446,7 +462,36 @@ class BinarySearchTree {
     }
 
     fun rotateLeftAt(k: Int) {
-        TODO()
+        //
+        //    [P]      ->        Q
+        //    / \      ->       / \
+        //   A   Q     ->     [P]  C
+        //      / \    ->     / \
+        //     B   C   ->    A   B
+        //
+        val (pivot, pivotAncestor) = find(root, k)
+        if (pivot == null) throw NoSuchElementException()
+
+        // Pivot's right child is going to be the new pivot
+        val pivotRight = pivot.right
+        val pivotRightLeft = pivotRight?.left
+
+        // Reassign the direct child of ancestor
+        if (pivotAncestor == null) {
+            root = pivotRight
+        } else {
+            if (pivotAncestor.left == pivot) {
+                pivotAncestor.left = pivotRight
+            } else {
+                pivotAncestor.right = pivotRight
+            }
+        }
+
+        // Exchange child from pivot to next pivot
+        pivot.right = pivotRightLeft
+
+        // Assign the pivot as child of new pivot
+        pivotRight?.left = pivot
     }
 
     fun rotateRightAt(k: Int) {
@@ -457,33 +502,59 @@ class BinarySearchTree {
         //    / \      ->        / \
         //   A   B     ->       B   C
         //
-        // path: Q -> C
-        val path = LinkedList<Int>()
-        val (pivot, pivotAncesstor) = find(root, k, path)
+        val (pivot, pivotAncestor) = find(root, k)
         if (pivot == null) throw NoSuchElementException()
 
         // Pivot's left child is going to be the new pivot
         val pivotLeft = pivot.left
         val pivotLeftRight = pivot.left?.right
-        val pivotRight = pivot.right
-        if (pivotAncesstor == null) {
-            // Construct the link in between pivot and its ancestor
+
+        // Reassign the direct child of ancestor
+        if (pivotAncestor == null) {
             root = pivotLeft
         } else {
-            // Construct the link in between pivot and its ancestor
-            if (pivotAncesstor.left == pivot) {
-                pivotAncesstor.left = pivotLeft
+            if (pivotAncestor.left == pivot) {
+                pivotAncestor.left = pivotLeft
             } else {
-                pivotAncesstor.right = pivotRight
+                pivotAncestor.right = pivotLeft
             }
         }
 
-        // Exchange pivot
-        pivotLeft?.right = pivot
-
-        // Shift pivot's left-right to pivot's left
-        pivotLeft?.right = pivot
+        // Exchange child from pivot to next pivot
         pivot.left = pivotLeftRight
+
+        // Assign the pivot as child of new pivot
+        pivotLeft?.right = pivot
+    }
+
+    fun printPreOrder(): String {
+        val q = ArrayDeque<Int>()
+        printPreOrder(root, q)
+
+        val builder = StringBuilder()
+        while (q.isNotEmpty()) {
+            val num = q.pop()
+
+            builder.append(num)
+            if (q.isNotEmpty()) {
+                builder.append(" ")
+            }
+        }
+
+        return builder.toString()
+    }
+
+    private fun printPreOrder(node: Node?, q: Queue<Int>) {
+        when (node) {
+            null -> {
+                return
+            }
+            else -> {
+                q.offer(node.value)
+                printPreOrder(node.left, q)
+                printPreOrder(node.right, q)
+            }
+        }
     }
 
     fun printInOrder(): String {
