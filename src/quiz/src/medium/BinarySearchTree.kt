@@ -5,8 +5,9 @@ import java.lang.RuntimeException
 import java.util.*
 
 /**
- * Please implement the [put], [delete], [contains], [floor], [ceiling], and
- * [printInOrder] of an integer Binary Search Tree.
+ * Please implement the [put], [delete], [contains], [floor], [ceiling], [dist],
+ * [lca], [rotateRight], [rotateLeft] and [printInOrder] of an integer Binary
+ * Search Tree.
  *
  * Example:
  *
@@ -139,6 +140,17 @@ class BinarySearchTree {
             tree1.put(18)
             tree1.delete(15)
             Assert.assertEquals("1 8 10 17 18 20 21 23 25 30 31", tree1.printInOrder())
+
+            // "lca" test
+            Assert.assertEquals(20, tree1.lca(18, 23))
+            Assert.assertEquals(17, tree1.lca(1, 25))
+            // "lca" not found test
+            try {
+                tree1.lca(17, 23)
+                throw NoSuchElementException()
+            } catch (ignored: Throwable) {
+                // IGNORED
+            }
         }
     }
 
@@ -150,6 +162,9 @@ class BinarySearchTree {
         root = null
     }
 
+    /**
+     * Add an integer to the tree.
+     */
     fun put(value: Int) {
         if (root == null) {
             root = Node(value)
@@ -176,6 +191,9 @@ class BinarySearchTree {
         }
     }
 
+    /**
+     * Delete an integer from the tree.
+     */
     fun delete(k: Int) {
         root = deleteNode(root, k)
     }
@@ -250,6 +268,9 @@ class BinarySearchTree {
         }
     }
 
+    /**
+     * Check if an integer is in the tree.
+     */
     fun contains(k: Int): Boolean {
         var n = root
         while (n != null) {
@@ -325,6 +346,67 @@ class BinarySearchTree {
                 }
             }
         }
+    }
+
+    /**
+     * Find the distance between two integer in the tree.
+     */
+    fun dist(k: Int, l: Int): Int {
+        TODO()
+    }
+
+    /**
+     * Find the least common ancestor of two integer in the tree.
+     */
+    fun lca(k: Int, l: Int): Int {
+        var ancestor = root?.value ?: throw NoSuchElementException()
+
+        // Find k
+        val pathK = LinkedList<Int>()
+        find(root, k, pathK)
+        if (pathK.isEmpty()) throw NoSuchElementException()
+
+        // Find l
+        val pathL = LinkedList<Int>()
+        find(root, l, pathL)
+        if (pathL.isEmpty()) throw NoSuchElementException()
+
+        // Compare the path
+        while (pathK.isNotEmpty() && pathL.isNotEmpty()) {
+            val ancestorK = pathK.pollFirst()
+            val ancestorL = pathL.pollFirst()
+
+            if (ancestorK == ancestorL) {
+                ancestor = ancestorK
+            } else {
+                break
+            }
+        }
+
+        return ancestor
+    }
+
+    private fun find(node: Node?, k: Int, q: Deque<Int>) {
+        if (node == null) {
+            // Not found at all!
+            q.clear()
+        } else {
+            q.offer(node.value)
+
+            if (k < node.value) {
+                find(node.left, k , q)
+            } else if (k > node.value) {
+                find(node.right, k , q)
+            }
+        }
+    }
+
+    fun rotateLeft(k: Int) {
+        TODO()
+    }
+
+    fun rotateRight(k: Int) {
+        TODO()
     }
 
     fun printInOrder(): String {
