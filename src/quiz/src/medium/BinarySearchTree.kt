@@ -141,12 +141,24 @@ class BinarySearchTree {
             tree1.delete(15)
             Assert.assertEquals("1 8 10 17 18 20 21 23 25 30 31", tree1.printInOrder())
 
-            // "lca" test
+            // "lca" method test
             Assert.assertEquals(20, tree1.lca(18, 23))
             Assert.assertEquals(17, tree1.lca(1, 25))
             // "lca" not found test
             try {
                 tree1.lca(17, 23)
+                throw NoSuchElementException()
+            } catch (ignored: Throwable) {
+                // IGNORED
+            }
+
+            // "dist" method test
+            Assert.assertEquals(8, tree1.dist(1, 23))
+            Assert.assertEquals(3, tree1.dist(20, 23))
+            Assert.assertEquals(4, tree1.dist(18, 23))
+            // "dist" not found test
+            try {
+                tree1.dist(17, 23)
                 throw NoSuchElementException()
             } catch (ignored: Throwable) {
                 // IGNORED
@@ -352,29 +364,57 @@ class BinarySearchTree {
      * Find the distance between two integer in the tree.
      */
     fun dist(k: Int, l: Int): Int {
-        TODO()
+        // Find k
+        val pathK = LinkedList<Int>()
+        find(root, k, pathK)
+        if (pathK.isEmpty()) throw NoSuchElementException()
+        val stepsK = pathK.size
+
+        // Find l
+        val pathL = LinkedList<Int>()
+        find(root, l, pathL)
+        if (pathL.isEmpty()) throw NoSuchElementException()
+        val stepsL = pathL.size
+
+        // Find common steps
+        var commonSteps = 0
+        while (pathK.isNotEmpty() && pathL.isNotEmpty()) {
+            val ancestorK = pathK.pollFirst()
+            val ancestorL = pathL.pollFirst()
+
+            if (ancestorK == ancestorL) {
+                ++commonSteps
+            } else {
+                break
+            }
+        }
+
+        return stepsK + stepsL - 2 * commonSteps
     }
 
     /**
      * Find the least common ancestor of two integer in the tree.
      */
     fun lca(k: Int, l: Int): Int {
-        var ancestor = root?.value ?: throw NoSuchElementException()
-
         // Find k
         val pathK = LinkedList<Int>()
         find(root, k, pathK)
-        if (pathK.isEmpty()) throw NoSuchElementException()
 
         // Find l
         val pathL = LinkedList<Int>()
         find(root, l, pathL)
-        if (pathL.isEmpty()) throw NoSuchElementException()
 
-        // Compare the path
-        while (pathK.isNotEmpty() && pathL.isNotEmpty()) {
-            val ancestorK = pathK.pollFirst()
-            val ancestorL = pathL.pollFirst()
+        return lca(pathK, pathL)
+    }
+
+    private fun lca(q1: Deque<Int>, q2: Deque<Int>): Int {
+        if (q1.isEmpty()) throw NoSuchElementException()
+        if (q2.isEmpty()) throw NoSuchElementException()
+        var ancestor = root?.value ?: throw NoSuchElementException()
+
+        while (q1.isNotEmpty() && q2.isNotEmpty()) {
+            val ancestorK = q1.pollFirst()
+            val ancestorL = q2.pollFirst()
 
             if (ancestorK == ancestorL) {
                 ancestor = ancestorK
