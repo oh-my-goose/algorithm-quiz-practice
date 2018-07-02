@@ -426,21 +426,6 @@ class BinarySearchTree {
         return ancestor
     }
 
-    private fun find(node: Node?, k: Int, q: Deque<Int>) {
-        if (node == null) {
-            // Not found at all!
-            q.clear()
-        } else {
-            q.offer(node.value)
-
-            if (k < node.value) {
-                find(node.left, k , q)
-            } else if (k > node.value) {
-                find(node.right, k , q)
-            }
-        }
-    }
-
     fun rotateLeft(k: Int) {
         TODO()
     }
@@ -475,6 +460,25 @@ class BinarySearchTree {
                 printInOrder(node.left, q)
                 q.offer(node.value)
                 printInOrder(node.right, q)
+            }
+        }
+    }
+
+    private fun find(node: Node?, k: Int, q: Deque<Int>): Node? {
+        return if (node == null) {
+            // Not found at all!
+            q.clear()
+            null
+        } else {
+            q.offer(node.value)
+
+            if (k < node.value) {
+                find(node.left, k , q)
+            } else if (k > node.value) {
+                find(node.right, k , q)
+            } else {
+                // Lucky, found it!
+                node
             }
         }
     }
